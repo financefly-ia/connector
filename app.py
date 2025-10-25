@@ -2,9 +2,13 @@
 import os
 import requests
 import streamlit as st
+import traceback
 from dotenv import load_dotenv
 from db import init_db, save_client
 
+# =========================================================
+# CONFIGURAÇÃO INICIAL
+# =========================================================
 load_dotenv()
 st.set_page_config(page_title="Financefly Connector", page_icon="🪁", layout="centered")
 
@@ -12,6 +16,10 @@ PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID")
 PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET")
 PLUGGY_BASE_URL = "https://api.pluggy.ai"
 
+
+# =========================================================
+# FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY
+# =========================================================
 def create_connect_token(client_user_id=None):
     url = f"{PLUGGY_BASE_URL}/connect_token"
     payload = {"clientUserId": client_user_id} if client_user_id else {}
@@ -19,21 +27,37 @@ def create_connect_token(client_user_id=None):
     resp.raise_for_status()
     return resp.json()["accessToken"]
 
+
+# =========================================================
+# ESTADO INICIAL DO APP
+# =========================================================
 if "connect_token" not in st.session_state:
     st.session_state.connect_token = None
 if "form_data" not in st.session_state:
     st.session_state.form_data = {"name": "", "email": ""}
 
+
+# =========================================================
+# CONEXÃO COM O BANCO
+# =========================================================
 try:
     init_db()
 except Exception as e:
     st.error(f"Erro ao conectar no banco: {e}")
+    st.code(traceback.format_exc())  # mostra o traceback completo
 
+
+# =========================================================
+# INTERFACE STREAMLIT
+# =========================================================
 st.title("Financefly Connector")
 st.caption("Conecte sua conta bancária via Pluggy com segurança.")
 
-params = st.experimental_get_query_params()
-item_id = params.get("itemId", [None])[0]
+# ---------------------------------------------------------
+# CAPTURA DE PARAMETRO itemId PELA NOVA API
+# ---------------------------------------------------------
+params = st.query_params
+item_id = params.get("itemId", None)
 
 if item_id:
     name = st.session_state.form_data.get("name")
@@ -47,9 +71,15 @@ if item_id:
             st.error(f"Erro ao salvar no banco: {e}")
     else:
         st.warning("itemId recebido, mas faltam nome e e-mail.")
-    st.experimental_set_query_params()
+
+    # Limpa os parâmetros da URL
+    st.query_params.clear()
     st.stop()
 
+
+# ---------------------------------------------------------
+# FORMULÁRIO DE CADASTRO
+# ---------------------------------------------------------
 with st.form("client_form"):
     name = st.text_input("Nome completo", st.session_state.form_data["name"])
     email = st.text_input("E-mail", st.session_state.form_data["email"])
@@ -63,6 +93,10 @@ if submit:
     token = create_connect_token(client_user_id=email)
     st.session_state.connect_token = token
 
+
+# ---------------------------------------------------------
+# PLUGGY CONNECT WIDGET
+# ---------------------------------------------------------
 if st.session_state.connect_token:
     st.info("Abrindo o Pluggy Connect…")
     html = f"""
