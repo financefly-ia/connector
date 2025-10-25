@@ -1,27 +1,40 @@
 # db.py
 import os
-from dotenv import load_dotenv
 import psycopg
 from psycopg.rows import dict_row
 
-# ==============================
-# 🔐 Carrega variáveis de ambiente (.env)
-# ==============================
-env_path = os.path.join(os.path.dirname(__file__), ".env")
-load_dotenv(dotenv_path=env_path, override=True)
+# =========================================================
+# Helper para carregar variáveis (Streamlit Cloud + Local)
+# =========================================================
+def get_env(key, default=None):
+    # 1. Tenta pegar da env local (.env)
+    val = os.getenv(key)
+    if val:
+        return val
+    # 2. Se estiver rodando no Streamlit Cloud, tenta pegar dos secrets
+    try:
+        import streamlit as st
+        return st.secrets.get(key, default)
+    except Exception:
+        return default
 
-# ==============================
-# 🧱 Configuração do Banco (Railway)
-# ==============================
+
+# =========================================================
+# Configuração do Banco de Dados
+# =========================================================
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST"),
-    "port": os.getenv("DB_PORT"),
-    "dbname": os.getenv("DB_NAME"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "sslmode": os.getenv("DB_SSLMODE", "require"),
+    "host": get_env("DB_HOST"),
+    "port": get_env("DB_PORT"),
+    "dbname": get_env("DB_NAME"),
+    "user": get_env("DB_USER"),
+    "password": get_env("DB_PASSWORD"),
+    "sslmode": get_env("DB_SSLMODE", "require"),
 }
 
+
+# =========================================================
+# Criação da tabela
+# =========================================================
 DDL = """
 CREATE TABLE IF NOT EXISTS financefly_clients (
     id SERIAL PRIMARY KEY,
@@ -32,16 +45,17 @@ CREATE TABLE IF NOT EXISTS financefly_clients (
 );
 """
 
-# ==============================
-# ⚙️ Funções principais
-# ==============================
+
 def get_conn():
-    return psycopg.connect(**DB_CONFIG)
+    # Força timeout e SSL (Railway exige)
+    return psycopg.connect(**DB_CONFIG, connect_timeout=10, target_session_attrs="read-write")
+
 
 def init_db():
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(DDL)
         conn.commit()
+
 
 def save_client(name, email, item_id):
     sql = """
