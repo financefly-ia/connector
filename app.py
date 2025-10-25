@@ -51,13 +51,13 @@ if "form_data" not in st.session_state:
 # =========================================================
 # CONEXÃO COM O BANCO DE DADOS
 # =========================================================
-try:
-    init_db()
-    st.info("💾 Banco inicializado com sucesso.")
-except Exception as e:
-    st.error(f"⚠️ Erro ao conectar no banco: {e}")
-    st.code(traceback.format_exc())
-    st.stop()
+# try:
+  #  init_db()
+   # st.info("💾 Banco inicializado com sucesso.")
+# except Exception as e:
+   # st.error(f"⚠️ Erro ao conectar no banco: {e}")
+   # st.code(traceback.format_exc())
+   # st.stop()
 
 # =========================================================
 # INTERFACE STREAMLIT
