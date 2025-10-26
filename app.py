@@ -1,34 +1,21 @@
 # app.py
+import os
+import requests
 import streamlit as st
 import traceback
+from dotenv import load_dotenv
+from db import init_db, save_client
 
 # =========================================================
-# CONFIGURAÇÃO INICIAL + BLOCO DE DIAGNÓSTICO
+# CONFIGURAÇÃO INICIAL
 # =========================================================
+load_dotenv()
 st.set_page_config(page_title="Financefly Connector", page_icon="🪁", layout="centered")
 
-st.title("🚀 Financefly Connector")
-st.caption("Inicializando ambiente...")
-
-try:
-    import os
-    import requests
-    from dotenv import load_dotenv
-    from db import init_db, save_client
-
-    load_dotenv()
-    st.success("✅ Módulos importados com sucesso.")
-except Exception as e:
-    st.error(f"❌ Falha ao importar módulos: {e}")
-    st.code(traceback.format_exc())
-    st.stop()
-
-# =========================================================
-# VARIÁVEIS DE AMBIENTE PLUGGY
-# =========================================================
 PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID")
 PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET")
-PLUGGY_BASE_URL = "https://api.pluggy.ai"
+PLUGGY_BASE_URL = "https://api.pluggy.dev"
+
 
 # =========================================================
 # FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY
@@ -40,6 +27,7 @@ def create_connect_token(client_user_id=None):
     resp.raise_for_status()
     return resp.json()["accessToken"]
 
+
 # =========================================================
 # ESTADO INICIAL DO APP
 # =========================================================
@@ -48,16 +36,16 @@ if "connect_token" not in st.session_state:
 if "form_data" not in st.session_state:
     st.session_state.form_data = {"name": "", "email": ""}
 
+
 # =========================================================
-# CONEXÃO COM O BANCO DE DADOS
+# CONEXÃO COM O BANCO
 # =========================================================
-# try:
-  #  init_db()
-   # st.info("💾 Banco inicializado com sucesso.")
-# except Exception as e:
-   # st.error(f"⚠️ Erro ao conectar no banco: {e}")
-   # st.code(traceback.format_exc())
-   # st.stop()
+try:
+    init_db()
+except Exception as e:
+    st.error(f"Erro ao conectar no banco: {e}")
+    st.code(traceback.format_exc())  # mostra o traceback completo
+
 
 # =========================================================
 # INTERFACE STREAMLIT
@@ -81,13 +69,13 @@ if item_id:
             st.success(f"Conta conectada com sucesso! itemId: {item_id}")
         except Exception as e:
             st.error(f"Erro ao salvar no banco: {e}")
-            st.code(traceback.format_exc())
     else:
         st.warning("itemId recebido, mas faltam nome e e-mail.")
 
     # Limpa os parâmetros da URL
     st.query_params.clear()
     st.stop()
+
 
 # ---------------------------------------------------------
 # FORMULÁRIO DE CADASTRO
@@ -104,6 +92,7 @@ if submit:
     st.session_state.form_data = {"name": name, "email": email}
     token = create_connect_token(client_user_id=email)
     st.session_state.connect_token = token
+
 
 # ---------------------------------------------------------
 # PLUGGY CONNECT WIDGET
