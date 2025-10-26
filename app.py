@@ -3,6 +3,7 @@ import os
 import requests
 import streamlit as st
 import traceback
+import base64
 from dotenv import load_dotenv
 from db import init_db, save_client
 
@@ -16,17 +17,25 @@ PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID")
 PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET")
 PLUGGY_BASE_URL = "https://api.pluggy.ai"
 
-
 # =========================================================
-# FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY
+# FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY (CORRIGIDA)
 # =========================================================
 def create_connect_token(client_user_id=None):
     url = f"{PLUGGY_BASE_URL}/connect_token"
     payload = {"clientUserId": client_user_id} if client_user_id else {}
-    resp = requests.post(url, json=payload, auth=(PLUGGY_CLIENT_ID, PLUGGY_CLIENT_SECRET))
+
+    # 🔒 Autenticação Base64 conforme documentação oficial da Pluggy
+    credentials = f"{PLUGGY_CLIENT_ID}:{PLUGGY_CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": "application/json"
+    }
+
+    resp = requests.post(url, json=payload, headers=headers)
     resp.raise_for_status()
     return resp.json()["accessToken"]
-
 
 # =========================================================
 # ESTADO INICIAL DO APP
@@ -36,7 +45,6 @@ if "connect_token" not in st.session_state:
 if "form_data" not in st.session_state:
     st.session_state.form_data = {"name": "", "email": ""}
 
-
 # =========================================================
 # CONEXÃO COM O BANCO
 # =========================================================
@@ -44,8 +52,7 @@ try:
     init_db()
 except Exception as e:
     st.error(f"Erro ao conectar no banco: {e}")
-    st.code(traceback.format_exc())  # mostra o traceback completo
-
+    st.code(traceback.format_exc())
 
 # =========================================================
 # INTERFACE STREAMLIT
@@ -72,10 +79,8 @@ if item_id:
     else:
         st.warning("itemId recebido, mas faltam nome e e-mail.")
 
-    # Limpa os parâmetros da URL
     st.query_params.clear()
     st.stop()
-
 
 # ---------------------------------------------------------
 # FORMULÁRIO DE CADASTRO
@@ -90,9 +95,14 @@ if submit:
         st.warning("Preencha todos os campos.")
         st.stop()
     st.session_state.form_data = {"name": name, "email": email}
-    token = create_connect_token(client_user_id=email)
-    st.session_state.connect_token = token
 
+    try:
+        token = create_connect_token(client_user_id=email)
+        st.session_state.connect_token = token
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erro ao gerar token Pluggy: {e}")
+        st.code(traceback.format_exc())
+        st.stop()
 
 # ---------------------------------------------------------
 # PLUGGY CONNECT WIDGET
