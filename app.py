@@ -14,7 +14,7 @@ st.set_page_config(page_title="Financefly Connector", page_icon="🪁", layout="
 
 PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID")
 PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET")
-PLUGGY_BASE_URL = "https://api.pluggy.dev"
+PLUGGY_BASE_URL = "https://api.pluggy.ai"
 
 
 # =========================================================
