@@ -20,24 +20,38 @@ PLUGGY_BASE_URL = "https://api.pluggy.ai"
 # =========================================================
 # FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY (CORRIGIDA)
 # =========================================================
-def create_connect_token(client_user_id=None):
-    url = f"{PLUGGY_BASE_URL}/connect_token"
-    payload = {"clientUserId": client_user_id} if client_user_id else {}
+import requests
 
-    # Monta o header Authorization manualmente em Base64
-    token_bytes = f"{PLUGGY_CLIENT_ID}:{PLUGGY_CLIENT_SECRET}".encode("utf-8")
-    encoded_auth = base64.b64encode(token_bytes).decode("utf-8")
+def create_connect_token(client_user_id=None):
+    # 1️⃣ Autentica e gera o apiKey
+    auth_resp = requests.post(
+        "https://api.pluggy.ai/auth",
+        headers={"Content-Type": "application/json"},
+        json={
+            "clientId": os.getenv("PLUGGY_CLIENT_ID"),
+            "clientSecret": os.getenv("PLUGGY_CLIENT_SECRET")
+        },
+    )
+    if auth_resp.status_code != 200:
+        st.error(f"Erro ao autenticar com Pluggy: {auth_resp.status_code} - {auth_resp.text}")
+        auth_resp.raise_for_status()
+
+    api_key = auth_resp.json().get("apiKey")
+
+    # 2️⃣ Usa o apiKey pra gerar o connect_token
+    url = "https://api.pluggy.ai/connect_token"
     headers = {
-        "Authorization": f"Basic {encoded_auth}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
+    payload = {"clientUserId": client_user_id} if client_user_id else {}
 
-    resp = requests.post(url, json=payload, headers=headers)
-    if resp.status_code != 200:
-        st.error(f"Erro ao gerar token Pluggy: {resp.status_code} - {resp.text}")
-        resp.raise_for_status()
+    token_resp = requests.post(url, headers=headers, json=payload)
+    if token_resp.status_code != 200:
+        st.error(f"Erro ao gerar connect_token: {token_resp.status_code} - {token_resp.text}")
+        token_resp.raise_for_status()
 
-    return resp.json()["accessToken"]
+    return token_resp.json()["accessToken"]
 
 # =========================================================
 # ESTADO INICIAL DO APP
