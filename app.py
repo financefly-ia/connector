@@ -3,7 +3,6 @@ import os
 import requests
 import streamlit as st
 import traceback
-import base64
 from dotenv import load_dotenv
 from db import init_db, save_client
 
@@ -23,15 +22,16 @@ PLUGGY_BASE_URL = "https://api.pluggy.ai"
 def create_connect_token(client_user_id=None):
     # 1️⃣ Autentica e obtém o apiKey
     auth_resp = requests.post(
-        "https://api.pluggy.ai/auth",
+        f"{PLUGGY_BASE_URL}/auth",
         headers={
             "accept": "application/json",
             "content-type": "application/json"
         },
         json={
-            "clientId": os.getenv("PLUGGY_CLIENT_ID"),
-            "clientSecret": os.getenv("PLUGGY_CLIENT_SECRET")
+            "clientId": PLUGGY_CLIENT_ID,
+            "clientSecret": PLUGGY_CLIENT_SECRET
         },
+        timeout=15
     )
 
     if auth_resp.status_code != 200:
@@ -43,15 +43,15 @@ def create_connect_token(client_user_id=None):
         raise ValueError("API key não recebida na resposta da Pluggy")
 
     # 2️⃣ Usa o apiKey no header correto
-    url = "https://api.pluggy.ai/connect_token"
+    url = f"{PLUGGY_BASE_URL}/connect_token"
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "X-API-KEY": api_key  # <<< ESTE É O CABEÇALHO CORRETO
+        "X-API-KEY": api_key  # <<< Cabeçalho correto
     }
     payload = {"clientUserId": client_user_id} if client_user_id else {}
 
-    token_resp = requests.post(url, headers=headers, json=payload)
+    token_resp = requests.post(url, headers=headers, json=payload, timeout=15)
 
     if token_resp.status_code != 200:
         st.error(f"Erro ao gerar connect_token: {token_resp.status_code} - {token_resp.text}")
@@ -86,7 +86,7 @@ st.caption("Conecte sua conta bancária via Pluggy com segurança.")
 # CAPTURA DE PARAMETRO itemId PELA NOVA API
 # ---------------------------------------------------------
 params = st.query_params
-item_id = params.get("itemId", None)
+item_id = params.get("itemId", [None])[0] if isinstance(params.get("itemId"), list) else params.get("itemId")
 
 if item_id:
     name = st.session_state.form_data.get("name")
@@ -125,6 +125,10 @@ if submit:
         st.error(f"Erro ao gerar token Pluggy: {e}")
         st.code(traceback.format_exc())
         st.stop()
+    except Exception as e:
+        st.error(f"Erro inesperado: {e}")
+        st.code(traceback.format_exc())
+        st.stop()
 
 # ---------------------------------------------------------
 # PLUGGY CONNECT WIDGET
@@ -151,4 +155,4 @@ if st.session_state.connect_token:
       connect.open();
     </script>
     """
-    st.components.v1.html(html, height=10)
+    st.components.v1.html(html, height=0)
