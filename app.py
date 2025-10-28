@@ -20,33 +20,39 @@ PLUGGY_BASE_URL = "https://api.pluggy.ai"
 # =========================================================
 # FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY (CORRIGIDA)
 # =========================================================
-import requests
-
 def create_connect_token(client_user_id=None):
-    # 1️⃣ Autentica e gera o apiKey
+    # 1️⃣ Autentica e obtém o apiKey
     auth_resp = requests.post(
         "https://api.pluggy.ai/auth",
-        headers={"Content-Type": "application/json"},
+        headers={
+            "accept": "application/json",
+            "content-type": "application/json"
+        },
         json={
             "clientId": os.getenv("PLUGGY_CLIENT_ID"),
             "clientSecret": os.getenv("PLUGGY_CLIENT_SECRET")
         },
     )
+
     if auth_resp.status_code != 200:
         st.error(f"Erro ao autenticar com Pluggy: {auth_resp.status_code} - {auth_resp.text}")
         auth_resp.raise_for_status()
 
     api_key = auth_resp.json().get("apiKey")
+    if not api_key:
+        raise ValueError("API key não recebida na resposta da Pluggy")
 
-    # 2️⃣ Usa o apiKey pra gerar o connect_token
+    # 2️⃣ Usa o apiKey no header correto
     url = "https://api.pluggy.ai/connect_token"
     headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "accept": "application/json",
+        "content-type": "application/json",
+        "X-API-KEY": api_key  # <<< ESTE É O CABEÇALHO CORRETO
     }
     payload = {"clientUserId": client_user_id} if client_user_id else {}
 
     token_resp = requests.post(url, headers=headers, json=payload)
+
     if token_resp.status_code != 200:
         st.error(f"Erro ao gerar connect_token: {token_resp.status_code} - {token_resp.text}")
         token_resp.raise_for_status()
