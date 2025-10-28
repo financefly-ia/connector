@@ -24,17 +24,19 @@ def create_connect_token(client_user_id=None):
     url = f"{PLUGGY_BASE_URL}/connect_token"
     payload = {"clientUserId": client_user_id} if client_user_id else {}
 
-    # 🔒 Autenticação Base64 conforme documentação oficial da Pluggy
-    credentials = f"{PLUGGY_CLIENT_ID}:{PLUGGY_CLIENT_SECRET}"
-    encoded_credentials = base64.b64encode(credentials.encode()).decode()
-
+    # Monta o header Authorization manualmente em Base64
+    token_bytes = f"{PLUGGY_CLIENT_ID}:{PLUGGY_CLIENT_SECRET}".encode("utf-8")
+    encoded_auth = base64.b64encode(token_bytes).decode("utf-8")
     headers = {
-        "Authorization": f"Basic {encoded_credentials}",
+        "Authorization": f"Basic {encoded_auth}",
         "Content-Type": "application/json"
     }
 
     resp = requests.post(url, json=payload, headers=headers)
-    resp.raise_for_status()
+    if resp.status_code != 200:
+        st.error(f"Erro ao gerar token Pluggy: {resp.status_code} - {resp.text}")
+        resp.raise_for_status()
+
     return resp.json()["accessToken"]
 
 # =========================================================
