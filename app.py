@@ -135,24 +135,46 @@ if submit:
 # ---------------------------------------------------------
 if st.session_state.connect_token:
     st.info("Abrindo o Pluggy Connect…")
+    token_mask = st.session_state.connect_token[:8] + "..."  # só pra debug leve no front
+
     html = f"""
+    <div id="pluggy-status" style="margin:8px 0; font-family: ui-sans-serif, system-ui;">
+      Token pronto (parcial): <code>{token_mask}</code>
+    </div>
+
     <script src="https://cdn.pluggy.ai/pluggy-connect/v2.6.0/pluggy-connect.js"></script>
     <script>
-      const connect = new PluggyConnect({{
-        connectToken: "{st.session_state.connect_token}",
-        includeSandbox: false,
-        language: "pt",
-        theme: "dark",
-        onSuccess: (data) => {{
-          const itemId = data?.item?.id;
-          if (itemId) {{
-            const url = new URL(window.location.href);
-            url.searchParams.set("itemId", itemId);
-            window.location.href = url.toString();
+      (function() {{
+        const statusEl = document.getElementById('pluggy-status');
+
+        function log(msg) {{
+          if (statusEl) {{
+            const p = document.createElement('div');
+            p.textContent = msg;
+            statusEl.appendChild(p);
           }}
-        }},
-      }});
-      connect.open();
+        }}
+
+        try {{
+          const connect = new PluggyConnect({{
+            connectToken: "{st.session_state.connect_token}",
+            includeSandbox: false,
+            language: "pt",
+            theme: "dark",
+            onOpen: () => log("Connect aberto."),
+            onClose: () => log("Connect fechado."),
+            onEvent: (evt) => log("Evento: " + JSON.stringify(evt)),
+            onError: (err) => log("Erro do Pluggy: " + JSON.stringify(err))
+          }});
+
+          log("Instância criada, chamando open()...");
+          connect.open();
+
+        }} catch (e) {{
+          log("Exceção ao criar/abrir Connect: " + (e?.message || e));
+        }}
+      }})();
     </script>
     """
-    st.components.v1.html(html, height=0)
+    # Aumente a altura para o modal aparecer corretamente dentro do iframe
+    st.components.v1.html(html, height=600, scrolling=False)
