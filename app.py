@@ -10,6 +10,7 @@ from db import init_db, save_client
 # CONFIGURAÇÃO INICIAL
 # =========================================================
 load_dotenv()
+requests.adapters.DEFAULT_RETRIES = 3
 st.set_page_config(page_title="Financefly Connector", page_icon="🪁", layout="centered")
 
 PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID")
@@ -17,20 +18,13 @@ PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET")
 PLUGGY_BASE_URL = "https://api.pluggy.ai"
 
 # =========================================================
-# FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY (CORRIGIDA)
+# FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY
 # =========================================================
 def create_connect_token(client_user_id=None):
-    # 1️⃣ Autentica e obtém o apiKey
     auth_resp = requests.post(
         f"{PLUGGY_BASE_URL}/auth",
-        headers={
-            "accept": "application/json",
-            "content-type": "application/json"
-        },
-        json={
-            "clientId": PLUGGY_CLIENT_ID,
-            "clientSecret": PLUGGY_CLIENT_SECRET
-        },
+        headers={"accept": "application/json", "content-type": "application/json"},
+        json={"clientId": PLUGGY_CLIENT_ID, "clientSecret": PLUGGY_CLIENT_SECRET},
         timeout=15
     )
 
@@ -42,12 +36,11 @@ def create_connect_token(client_user_id=None):
     if not api_key:
         raise ValueError("API key não recebida na resposta da Pluggy")
 
-    # 2️⃣ Usa o apiKey no header correto
     url = f"{PLUGGY_BASE_URL}/connect_token"
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "X-API-KEY": api_key  # <<< Cabeçalho correto
+        "X-API-KEY": api_key
     }
     payload = {"clientUserId": client_user_id} if client_user_id else {}
 
@@ -82,9 +75,6 @@ except Exception as e:
 st.title("Financefly Connector")
 st.caption("Conecte sua conta bancária via Pluggy com segurança.")
 
-# ---------------------------------------------------------
-# CAPTURA DE PARAMETRO itemId PELA NOVA API
-# ---------------------------------------------------------
 params = st.query_params
 item_id = params.get("itemId", [None])[0] if isinstance(params.get("itemId"), list) else params.get("itemId")
 
@@ -100,13 +90,12 @@ if item_id:
             st.error(f"Erro ao salvar no banco: {e}")
     else:
         st.warning("itemId recebido, mas faltam nome e e-mail.")
-
     st.query_params.clear()
     st.stop()
 
-# ---------------------------------------------------------
+# =========================================================
 # FORMULÁRIO DE CADASTRO
-# ---------------------------------------------------------
+# =========================================================
 with st.form("client_form"):
     name = st.text_input("Nome completo", st.session_state.form_data["name"])
     email = st.text_input("E-mail", st.session_state.form_data["email"])
@@ -130,51 +119,51 @@ if submit:
         st.code(traceback.format_exc())
         st.stop()
 
-# ---------------------------------------------------------
+# =========================================================
 # PLUGGY CONNECT WIDGET
-# ---------------------------------------------------------
+# =========================================================
 if st.session_state.connect_token:
     st.info("Abrindo o Pluggy Connect…")
-    token_mask = st.session_state.connect_token[:8] + "..."  # só pra debug leve no front
-
     html = f"""
     <div id="pluggy-status" style="margin:8px 0; font-family: ui-sans-serif, system-ui;">
-      Token pronto (parcial): <code>{token_mask}</code>
+      Token pronto (parcial): <code>{st.session_state.connect_token[:8]}...</code>
     </div>
-
-    <script src="https://cdn.pluggy.ai/pluggy-connect/v2.6.0/pluggy-connect.js"></script>
     <script>
       (function() {{
         const statusEl = document.getElementById('pluggy-status');
-
         function log(msg) {{
-          if (statusEl) {{
-            const p = document.createElement('div');
-            p.textContent = msg;
-            statusEl.appendChild(p);
+          const p = document.createElement('div');
+          p.textContent = msg;
+          statusEl.appendChild(p);
+        }}
+
+        log("Carregando SDK Pluggy...");
+
+        const script = document.createElement("script");
+        script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.6.0/pluggy-connect.js";
+        script.onload = () => {{
+          log("SDK Pluggy carregado!");
+          try {{
+            const connect = new PluggyConnect({{
+              connectToken: "{st.session_state.connect_token}",
+              includeSandbox: false,
+              language: "pt",
+              theme: "dark",
+              onOpen: () => log("Connect aberto."),
+              onClose: () => log("Connect fechado."),
+              onEvent: (evt) => {{
+                if (evt?.eventName) log("Evento: " + evt.eventName);
+              }},
+              onError: (err) => log("Erro do Pluggy: " + JSON.stringify(err))
+            }});
+            connect.open();
+          }} catch (e) {{
+            log("Exceção ao abrir Connect: " + (e?.message || e));
           }}
-        }}
-
-        try {{
-          const connect = new PluggyConnect({{
-            connectToken: "{st.session_state.connect_token}",
-            includeSandbox: false,
-            language: "pt",
-            theme: "dark",
-            onOpen: () => log("Connect aberto."),
-            onClose: () => log("Connect fechado."),
-            onEvent: (evt) => log("Evento: " + JSON.stringify(evt)),
-            onError: (err) => log("Erro do Pluggy: " + JSON.stringify(err))
-          }});
-
-          log("Instância criada, chamando open()...");
-          connect.open();
-
-        }} catch (e) {{
-          log("Exceção ao criar/abrir Connect: " + (e?.message || e));
-        }}
+        }};
+        script.onerror = () => log("Falha ao carregar SDK da Pluggy!");
+        document.body.appendChild(script);
       }})();
     </script>
     """
-    # Aumente a altura para o modal aparecer corretamente dentro do iframe
     st.components.v1.html(html, height=600, scrolling=False)
