@@ -124,12 +124,14 @@ if submit:
 # =========================================================
 if st.session_state.connect_token:
     st.info("Abrindo o Pluggy Connect…")
+
     html = f"""
     <div id="pluggy-status" style="margin:8px 0; font-family: ui-sans-serif, system-ui;">
       Token pronto (parcial): <code>{st.session_state.connect_token[:8]}...</code>
     </div>
+
     <script>
-      (function() {{
+      (async function() {{
         const statusEl = document.getElementById('pluggy-status');
         function log(msg) {{
           const p = document.createElement('div');
@@ -137,33 +139,38 @@ if st.session_state.connect_token:
           statusEl.appendChild(p);
         }}
 
-        log("Carregando SDK Pluggy...");
+        log("Carregando SDK Pluggy diretamente...");
 
-        const script = document.createElement("script");
-        script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.6.0/pluggy-connect.js";
-        script.onload = () => {{
-          log("SDK Pluggy carregado!");
-          try {{
-            const connect = new PluggyConnect({{
-              connectToken: "{st.session_state.connect_token}",
-              includeSandbox: false,
-              language: "pt",
-              theme: "dark",
-              onOpen: () => log("Connect aberto."),
-              onClose: () => log("Connect fechado."),
-              onEvent: (evt) => {{
-                if (evt?.eventName) log("Evento: " + evt.eventName);
-              }},
-              onError: (err) => log("Erro do Pluggy: " + JSON.stringify(err))
-            }});
-            connect.open();
-          }} catch (e) {{
-            log("Exceção ao abrir Connect: " + (e?.message || e));
-          }}
-        }};
-        script.onerror = () => log("Falha ao carregar SDK da Pluggy!");
-        document.body.appendChild(script);
+        // Baixa o SDK via fetch e insere no DOM manualmente
+        try {{
+          const sdkResp = await fetch("https://cdn.pluggy.ai/pluggy-connect/v2.6.0/pluggy-connect.js");
+          if (!sdkResp.ok) throw new Error("Falha ao buscar SDK Pluggy");
+          const sdkText = await sdkResp.text();
+          const scriptEl = document.createElement("script");
+          scriptEl.textContent = sdkText;
+          document.body.appendChild(scriptEl);
+          log("SDK Pluggy injetado com sucesso!");
+        }} catch (e) {{
+          log("Erro ao baixar SDK: " + e.message);
+          return;
+        }}
+
+        try {{
+          const connect = new PluggyConnect({{
+            connectToken: "{st.session_state.connect_token}",
+            includeSandbox: false,
+            language: "pt",
+            theme: "dark",
+            onOpen: () => log("Pluggy Connect aberto."),
+            onClose: () => log("Pluggy Connect fechado."),
+            onError: (err) => log("Erro do Pluggy: " + JSON.stringify(err))
+          }});
+          connect.open();
+        }} catch (e) {{
+          log("Exceção ao abrir Connect: " + (e?.message || e));
+        }}
       }})();
     </script>
     """
     st.components.v1.html(html, height=600, scrolling=False)
+
