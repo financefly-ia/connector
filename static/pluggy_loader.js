@@ -53,16 +53,39 @@
   script.onload = () => {
     clearTimeout(timeout);
     updateStatus('✅ SDK Pluggy carregado com sucesso!', 'success');
-    window.dispatchEvent(new Event("pluggy_loaded"));
     
-    // Hide status after 3 seconds
-    setTimeout(() => {
-      if (statusEl && statusEl.parentNode) {
-        statusEl.style.transition = 'opacity 0.3s ease';
-        statusEl.style.opacity = '0';
-        setTimeout(() => statusEl.remove(), 300);
+    // Enhanced SDK readiness validation
+    let sdkReady = false;
+    let attempts = 0;
+    const maxAttempts = 10; // 5 seconds total (500ms * 10)
+    
+    const checkSDKReady = () => {
+      attempts++;
+      
+      if (typeof PluggyConnect !== 'undefined' && PluggyConnect.prototype && PluggyConnect.prototype.open) {
+        sdkReady = true;
+        updateStatus(`✅ SDK pronto após ${attempts * 500}ms`, 'success');
+        window.dispatchEvent(new Event("pluggy_loaded"));
+        
+        // Hide status after 3 seconds
+        setTimeout(() => {
+          if (statusEl && statusEl.parentNode) {
+            statusEl.style.transition = 'opacity 0.3s ease';
+            statusEl.style.opacity = '0';
+            setTimeout(() => statusEl.remove(), 300);
+          }
+        }, 3000);
+      } else if (attempts < maxAttempts) {
+        updateStatus(`🔄 Aguardando SDK... (${attempts}/${maxAttempts})`, 'info');
+        setTimeout(checkSDKReady, 500);
+      } else {
+        updateStatus('❌ SDK não ficou disponível. Recarregue a página.', 'error');
+        setTimeout(() => statusEl.remove(), 8000);
       }
-    }, 3000);
+    };
+    
+    // Start checking SDK readiness
+    setTimeout(checkSDKReady, 100);
   };
 
   script.onerror = () => {

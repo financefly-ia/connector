@@ -267,8 +267,29 @@ if st.session_state.connect_token:
           log("SDK Pluggy carregado com sucesso!", "success");
           updateProgress(85, "✅ SDK carregado com sucesso!");
           
-          // Wait a bit for SDK to initialize
-          await new Promise(resolve => setTimeout(resolve, 800));
+          // Enhanced SDK readiness check with proper timing
+          log("🔍 Verificando disponibilidade do SDK...", "info");
+          
+          // Wait for SDK to be fully loaded and PluggyConnect to be available
+          let sdkReady = false;
+          let attempts = 0;
+          const maxAttempts = 20; // 10 seconds total (500ms * 20)
+          
+          while (!sdkReady && attempts < maxAttempts) {{
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+            
+            if (typeof PluggyConnect !== 'undefined' && PluggyConnect.prototype && PluggyConnect.prototype.open) {{
+              sdkReady = true;
+              log(`✅ SDK pronto após ${{attempts * 500}}ms`, "success");
+            }} else {{
+              log(`🔄 Aguardando SDK... (tentativa ${{attempts}}/${{maxAttempts}})`, "info");
+            }}
+          }}
+          
+          if (!sdkReady) {{
+            throw new Error("SDK não ficou disponível após 10 segundos");
+          }}
           
         }} catch (e) {{
           if (e.name === 'AbortError') {{
@@ -414,38 +435,110 @@ if st.session_state.connect_token:
             }}
           }};
           
-          // Initialize the widget
-          const connect = new PluggyConnect(widgetConfig);
+          // Enhanced widget initialization with retry mechanism
+          let connect = null;
+          let initializationSuccess = false;
+          const maxRetries = 2;
+          let retryCount = 0;
           
-          // Store widget instance for potential future use
-          window.pluggyConnectInstance = connect;
-          
-          updateProgress(95, "🚀 Abrindo interface de conexão...");
-          log("Abrindo interface segura de conexão bancária...", "info", true);
-          
-          // Enhanced widget opening with validation
-          try {{
-            // Ensure widget is properly initialized before opening
-            if (typeof connect.open !== 'function') {{
-              throw new Error("Widget não foi inicializado corretamente");
+          // Retry loop for widget initialization
+          while (!initializationSuccess && retryCount <= maxRetries) {{
+            try {{
+              if (retryCount > 0) {{
+                log(`🔄 Tentativa ${{retryCount + 1}} de inicialização...`, "info", true);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1s interval between retries
+              }}
+              
+              // Validate connect token exists
+              if (!"{st.session_state.connect_token}") {{
+                throw new Error("Token de conexão não encontrado");
+              }}
+              
+              log(`🔧 Inicializando PluggyConnect (tentativa ${{retryCount + 1}})...`, "info");
+              
+              // Initialize the widget
+              connect = new PluggyConnect(widgetConfig);
+              
+              // Validate widget was created successfully
+              if (!connect || typeof connect.open !== 'function') {{
+                throw new Error("Widget não foi inicializado corretamente");
+              }}
+              
+              // Store widget instance for potential future use
+              window.pluggyConnectInstance = connect;
+              
+              log("✅ PluggyConnect inicializado com sucesso!", "success");
+              initializationSuccess = true;
+              
+            }} catch (initError) {{
+              retryCount++;
+              console.error(`Widget initialization attempt ${{retryCount}} failed:`, initError);
+              
+              if (retryCount <= maxRetries) {{
+                log(`⚠️ Falha na inicialização: ${{initError?.message || "Erro desconhecido"}}`, "warning");
+                log(`🔄 Tentando novamente em 1 segundo... (${{retryCount}}/${{maxRetries}})`, "info");
+              }} else {{
+                log(`❌ Falha após ${{maxRetries + 1}} tentativas: ${{initError?.message || "Erro desconhecido"}}`, "error");
+                log("Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.", "warning");
+                window.pluggyWidgetState = 'error';
+                return;
+              }}
             }}
+          }}
+          
+          // If initialization was successful, proceed to open the widget
+          if (initializationSuccess && connect) {{
+            updateProgress(95, "🚀 Abrindo interface de conexão...");
+            log("Abrindo interface segura de conexão bancária...", "info", true);
             
-            // Set initial state
-            window.pluggyWidgetState = 'initializing';
+            // Enhanced widget opening with validation and retry
+            let openSuccess = false;
+            let openRetryCount = 0;
+            const maxOpenRetries = 1;
             
-            // Small delay before opening to ensure everything is ready
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Open the widget
-            connect.open();
-            
-            log("✅ Interface de conexão iniciada com sucesso!", "success");
-            
-          }} catch (openError) {{
-            console.error("Error opening widget:", openError);
-            log("Erro ao abrir interface: " + (openError?.message || "Erro desconhecido"), "error");
-            log("Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.", "warning");
-            window.pluggyWidgetState = 'error';
+            while (!openSuccess && openRetryCount <= maxOpenRetries) {{
+              try {{
+                if (openRetryCount > 0) {{
+                  log(`🔄 Tentativa ${{openRetryCount + 1}} de abertura...`, "info");
+                  await new Promise(resolve => setTimeout(resolve, 1000)); // 1s interval
+                }}
+                
+                // Set initial state
+                window.pluggyWidgetState = 'initializing';
+                
+                // Ensure everything is ready before opening
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Validate connect token one more time before opening
+                if (!"{st.session_state.connect_token}") {{
+                  throw new Error("Token de conexão expirou ou não está disponível");
+                }}
+                
+                // Log timing details for debugging
+                const openStartTime = Date.now();
+                log(`🕐 Iniciando abertura do widget às ${{new Date().toLocaleTimeString()}}`, "info");
+                
+                // Open the widget
+                connect.open();
+                
+                const openEndTime = Date.now();
+                log(`✅ Widget aberto com sucesso em ${{openEndTime - openStartTime}}ms`, "success");
+                openSuccess = true;
+                
+              }} catch (openError) {{
+                openRetryCount++;
+                console.error(`Widget opening attempt ${{openRetryCount}} failed:`, openError);
+                
+                if (openRetryCount <= maxOpenRetries) {{
+                  log(`⚠️ Erro ao abrir widget: ${{openError?.message || "Erro desconhecido"}}`, "warning");
+                  log(`🔄 Tentando abrir novamente em 1 segundo...`, "info");
+                }} else {{
+                  log(`❌ Erro ao abrir interface: ${{openError?.message || "Widget não foi inicializado corretamente"}}`, "error");
+                  log("Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.", "warning");
+                  window.pluggyWidgetState = 'error';
+                }}
+              }}
+            }}
           }}
           
         }} catch (e) {{

@@ -1,0 +1,227 @@
+{
+  "validation_timestamp": 1762125574.5429142,
+  "validation_summary": {
+    "total_tests": 17,
+    "passed_tests": 16,
+    "failed_tests": 1
+  },
+  "test_results": [
+    {
+      "test": "Environment Validation - Valid Config",
+      "success": true,
+      "message": "Environment variables validated successfully",
+      "details": {
+        "config_keys": [
+          "client_id",
+          "client_secret",
+          "base_url"
+        ]
+      },
+      "timestamp": 1762125574.3881698
+    },
+    {
+      "test": "Environment Validation - Missing Variable",
+      "success": false,
+      "message": "Should have failed with missing PLUGGY_CLIENT_ID",
+      "details": {},
+      "timestamp": 1762125574.4039104
+    },
+    {
+      "test": "Complete Token Generation Flow",
+      "success": true,
+      "message": "Token generated successfully in 0.010s",
+      "details": {
+        "token_length": 30,
+        "generation_time": 0.009848594665527344,
+        "api_calls": 2
+      },
+      "timestamp": 1762125574.41493
+    },
+    {
+      "test": "API Call Sequence",
+      "success": true,
+      "message": "Correct number of API calls made: 2",
+      "details": {
+        "expected_calls": 2,
+        "actual_calls": 2
+      },
+      "timestamp": 1762125574.4150465
+    },
+    {
+      "test": "Error Scenario - Authentication Failure (401)",
+      "success": true,
+      "message": "Correct error message displayed: True",
+      "details": {
+        "expected_message": "Credenciais Pluggy inválidas",
+        "actual_message": "Credenciais Pluggy inválidas. Verifique a configuração.",
+        "status_code": 401
+      },
+      "timestamp": 1762125574.4258249
+    },
+    {
+      "test": "Error Scenario - Rate Limit (429)",
+      "success": true,
+      "message": "Correct error message displayed: True",
+      "details": {
+        "expected_message": "Muitas tentativas de conexão",
+        "actual_message": "Muitas tentativas de conexão. Aguarde alguns minutos e tente novamente.",
+        "status_code": 429
+      },
+      "timestamp": 1762125574.4399786
+    },
+    {
+      "test": "Error Scenario - Server Error (500)",
+      "success": true,
+      "message": "Correct error message displayed: True",
+      "details": {
+        "expected_message": "Serviço Pluggy temporariamente indisponível",
+        "actual_message": "Serviço Pluggy temporariamente indisponível. Tente novamente em alguns minutos.",
+        "status_code": 500
+      },
+      "timestamp": 1762125574.4489872
+    },
+    {
+      "test": "SDK Version in app.py",
+      "success": true,
+      "message": "v2.9.2 found: True, v2.6.0 found: False",
+      "details": {
+        "v2.9.2_present": true,
+        "v2.6.0_present": false
+      },
+      "timestamp": 1762125574.4923303
+    },
+    {
+      "test": "SDK Version in pluggy_loader.js",
+      "success": true,
+      "message": "v2.9.2 found: True, v2.6.0 found: False",
+      "details": {
+        "v2.9.2_present": true,
+        "v2.6.0_present": false
+      },
+      "timestamp": 1762125574.5235527
+    },
+    {
+      "test": "Status Messages Implementation",
+      "success": true,
+      "message": "Found 5/5 status messages",
+      "details": {
+        "expected_messages": [
+          "Conectando com segurança",
+          "Validando credenciais",
+          "Estabelecendo conexão segura",
+          "Preparando interface de conexão",
+          "Conexão preparada com sucesso"
+        ],
+        "found_messages": [
+          "Conectando com segurança",
+          "Validando credenciais",
+          "Estabelecendo conexão segura",
+          "Preparando interface de conexão",
+          "Conexão preparada com sucesso"
+        ],
+        "missing_messages": []
+      },
+      "timestamp": 1762125574.5278535
+    },
+    {
+      "test": "Loading Indicators Implementation",
+      "success": true,
+      "message": "Found 3 loading indicator types",
+      "details": {
+        "found_indicators": [
+          "spinner",
+          "progress",
+          "status_container"
+        ]
+      },
+      "timestamp": 1762125574.5281553
+    },
+    {
+      "test": "Widget Integration Configuration",
+      "success": true,
+      "message": "Found 7/7 widget elements",
+      "details": {
+        "expected_elements": [
+          "PluggyConnect",
+          "connectToken",
+          "onOpen",
+          "onClose",
+          "onSuccess",
+          "onError",
+          "connect.open()"
+        ],
+        "found_elements": [
+          "PluggyConnect",
+          "connectToken",
+          "onOpen",
+          "onClose",
+          "onSuccess",
+          "onError",
+          "connect.open()"
+        ]
+      },
+      "timestamp": 1762125574.5324118
+    },
+    {
+      "test": "Widget Callback Handling",
+      "success": true,
+      "message": "Success and error callbacks properly implemented",
+      "details": {
+        "callbacks_present": true
+      },
+      "timestamp": 1762125574.532666
+    },
+    {
+      "test": "Database Functions Import",
+      "success": true,
+      "message": "Database functions imported successfully",
+      "details": {
+        "functions": [
+          "init_db",
+          "save_client",
+          "get_conn"
+        ]
+      },
+      "timestamp": 1762125574.5337033
+    },
+    {
+      "test": "Database Functions Callable",
+      "success": true,
+      "message": "All database functions are callable",
+      "details": {
+        "callable_check": true
+      },
+      "timestamp": 1762125574.5338697
+    },
+    {
+      "test": "Error Handling Functions",
+      "success": true,
+      "message": "All error handling functions are available",
+      "details": {
+        "functions": [
+          "log_and_display_error",
+          "display_environment_errors",
+          "handle_pluggy_error"
+        ]
+      },
+      "timestamp": 1762125574.5343049
+    },
+    {
+      "test": "Error Handling Implementation",
+      "success": true,
+      "message": "Found 5/5 error handling elements",
+      "details": {
+        "elements_found": 5,
+        "total_elements": 5
+      },
+      "timestamp": 1762125574.5402658
+    }
+  ],
+  "environment": {
+    "python_version": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+    "test_environment": {
+      "PLUGGY_CLIENT_ID": "validation_test_client_id_123456",
+      "PLUGGY_CLIENT_SECRET": "validation_test_client_secret_789012"
+    }
+  }
+}
