@@ -1,4 +1,4 @@
-// static/pluggy_loader.js - Enhanced SDK loader with status messaging
+// static/pluggy_loader.js - Enhanced SDK loader with synchronous execution and fallback
 (function() {
   // Create status display if not exists
   let statusEl = document.getElementById('pluggy-loader-status');
@@ -37,63 +37,107 @@
     statusEl.innerHTML = message;
   }
 
-  // Show loading status
-  updateStatus('🔄 Carregando SDK Pluggy...', 'info');
-
-  // Create and configure script element
-  const script = document.createElement("script");
-  script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.9.2/pluggy-connect.js";
+  let sdkLoadAttempts = 0;
+  const maxLoadAttempts = 2; // Allow one retry
   
-  // Enhanced loading with timeout and error handling
-  const timeout = setTimeout(() => {
-    updateStatus('⚠️ Timeout ao carregar SDK. Verifique sua conexão.', 'warning');
-    setTimeout(() => statusEl.remove(), 5000);
-  }, 10000);
+  function loadSDK() {
+    sdkLoadAttempts++;
+    
+    // Show loading status
+    updateStatus(`🔄 Carregando SDK Pluggy... (tentativa ${sdkLoadAttempts}/${maxLoadAttempts})`, 'info');
 
-  script.onload = () => {
-    clearTimeout(timeout);
-    updateStatus('✅ SDK Pluggy carregado com sucesso!', 'success');
+    // Create and configure script element - NO async/defer for synchronous execution
+    const script = document.createElement("script");
+    script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.9.2/pluggy-connect.js";
+    // Explicitly ensure no async/defer attributes
+    script.async = false;
+    script.defer = false;
     
-    // Enhanced SDK readiness validation
-    let sdkReady = false;
-    let attempts = 0;
-    const maxAttempts = 10; // 5 seconds total (500ms * 10)
-    
-    const checkSDKReady = () => {
-      attempts++;
+    // 10-second timeout for SDK availability
+    const sdkTimeout = setTimeout(() => {
+      console.log(`SDK timeout after 10 seconds (attempt ${sdkLoadAttempts})`);
       
-      if (typeof PluggyConnect !== 'undefined' && PluggyConnect.prototype && PluggyConnect.prototype.open) {
-        sdkReady = true;
-        updateStatus(`✅ SDK pronto após ${attempts * 500}ms`, 'success');
-        window.dispatchEvent(new Event("pluggy_loaded"));
+      if (typeof window.PluggyConnect === 'undefined' && sdkLoadAttempts < maxLoadAttempts) {
+        updateStatus('⚠️ SDK não carregou em 10s. Tentando novamente...', 'warning');
         
-        // Hide status after 3 seconds
+        // Remove failed script
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+        
+        // Retry after 1 second
         setTimeout(() => {
-          if (statusEl && statusEl.parentNode) {
-            statusEl.style.transition = 'opacity 0.3s ease';
-            statusEl.style.opacity = '0';
-            setTimeout(() => statusEl.remove(), 300);
-          }
-        }, 3000);
-      } else if (attempts < maxAttempts) {
-        updateStatus(`🔄 Aguardando SDK... (${attempts}/${maxAttempts})`, 'info');
-        setTimeout(checkSDKReady, 500);
+          loadSDK();
+        }, 1000);
+      } else if (typeof window.PluggyConnect === 'undefined') {
+        updateStatus('❌ SDK falhou após todas as tentativas. Recarregue a página.', 'error');
+        setTimeout(() => statusEl.remove(), 8000);
+      }
+    }, 10000);
+
+    script.onload = () => {
+      console.log(`SDK script loaded successfully (attempt ${sdkLoadAttempts})`);
+      updateStatus('✅ SDK script carregado. Verificando execução...', 'success');
+      
+      // Enhanced SDK readiness validation with more frequent checks
+      let sdkReady = false;
+      let attempts = 0;
+      const maxAttempts = 20; // 10 seconds total (500ms * 20)
+      
+      const checkSDKReady = () => {
+        attempts++;
+        
+        if (typeof window.PluggyConnect !== 'undefined' && 
+            window.PluggyConnect.prototype && 
+            typeof window.PluggyConnect.prototype.open === 'function') {
+          
+          clearTimeout(sdkTimeout);
+          sdkReady = true;
+          console.log(`SDK ready after ${attempts * 500}ms (load attempt ${sdkLoadAttempts})`);
+          updateStatus(`✅ SDK pronto após ${attempts * 500}ms`, 'success');
+          window.dispatchEvent(new Event("pluggy_loaded"));
+          
+          // Hide status after 3 seconds
+          setTimeout(() => {
+            if (statusEl && statusEl.parentNode) {
+              statusEl.style.transition = 'opacity 0.3s ease';
+              statusEl.style.opacity = '0';
+              setTimeout(() => statusEl.remove(), 300);
+            }
+          }, 3000);
+          
+        } else if (attempts < maxAttempts) {
+          updateStatus(`🔄 Aguardando execução SDK... (${attempts}/${maxAttempts})`, 'info');
+          setTimeout(checkSDKReady, 500);
+        } else {
+          console.log(`SDK execution check failed after ${maxAttempts} attempts`);
+          // Don't clear timeout here - let the 10s timeout handle retry logic
+        }
+      };
+      
+      // Start checking SDK readiness immediately
+      checkSDKReady();
+    };
+
+    script.onerror = (error) => {
+      clearTimeout(sdkTimeout);
+      console.error(`SDK script loading error (attempt ${sdkLoadAttempts}):`, error);
+      
+      if (sdkLoadAttempts < maxLoadAttempts) {
+        updateStatus('⚠️ Erro ao carregar script. Tentando novamente...', 'warning');
+        setTimeout(() => {
+          loadSDK();
+        }, 1000);
       } else {
-        updateStatus('❌ SDK não ficou disponível. Recarregue a página.', 'error');
+        updateStatus('❌ Erro ao carregar SDK após todas as tentativas.', 'error');
         setTimeout(() => statusEl.remove(), 8000);
       }
     };
-    
-    // Start checking SDK readiness
-    setTimeout(checkSDKReady, 100);
-  };
 
-  script.onerror = () => {
-    clearTimeout(timeout);
-    updateStatus('❌ Erro ao carregar SDK. Tente recarregar a página.', 'error');
-    setTimeout(() => statusEl.remove(), 8000);
-  };
+    // Add script to head for synchronous loading
+    document.head.appendChild(script);
+  }
 
-  // Add script to head
-  document.head.appendChild(script);
+  // Start initial SDK load
+  loadSDK();
 })();
