@@ -1,143 +1,153 @@
-// static/pluggy_loader.js - Enhanced SDK loader with synchronous execution and fallback
-(function() {
-  // Create status display if not exists
-  let statusEl = document.getElementById('pluggy-loader-status');
-  if (!statusEl) {
-    statusEl = document.createElement('div');
-    statusEl.id = 'pluggy-loader-status';
-    statusEl.style.cssText = `
-      position: fixed; 
-      top: 20px; 
-      right: 20px; 
-      background: #f8f9fa; 
-      border: 1px solid #dee2e6; 
-      border-radius: 8px; 
-      padding: 12px 16px; 
-      font-family: system-ui, -apple-system, sans-serif; 
-      font-size: 14px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-      z-index: 10000;
-      max-width: 300px;
-    `;
-    document.body.appendChild(statusEl);
-  }
+// ===========================================================
+// Financefly / Pluggy SDK Loader v2.0
+// ===========================================================
+// Compatível com SDK local (/static/pluggy-connect.js)
+// Inclui logs visuais no Streamlit e fallback automático
+// ===========================================================
 
-  function updateStatus(message, type = 'info') {
-    const colors = {
-      info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460' },
-      success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724' },
-      error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24' },
-      warning: { bg: '#fff3cd', border: '#ffeaa7', text: '#856404' }
+(async function pluggyLoader() {
+  const MAX_WAIT = 10000; // 10s para SDK estar pronto
+  const MAX_RETRIES = 3;  // tentativas para abrir widget
+  const RETRY_INTERVAL = 1500; // ms
+
+  // Elemento de status visual (para logs no front)
+  function updateStatus(msg, type = "info") {
+    let container = document.getElementById("pluggy-status");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "pluggy-status";
+      container.style.cssText = `
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 8px;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        background: #1E1E2F;
+        color: #fff;
+        line-height: 1.6;
+      `;
+      document.body.prepend(container);
+    }
+
+    const colorMap = {
+      info: "#2196F3",
+      success: "#4CAF50",
+      warn: "#FFC107",
+      error: "#F44336"
     };
-    
-    const color = colors[type] || colors.info;
-    statusEl.style.backgroundColor = color.bg;
-    statusEl.style.borderColor = color.border;
-    statusEl.style.color = color.text;
-    statusEl.innerHTML = message;
+    const iconMap = {
+      info: "🔄",
+      success: "✅",
+      warn: "⚠️",
+      error: "❌"
+    };
+
+    const line = document.createElement("div");
+    line.innerHTML = `<span style="color:${colorMap[type]}">${iconMap[type]}</span> ${msg}`;
+    container.appendChild(line);
+    console.log(`[PluggyLoader] ${msg}`);
   }
 
-  let sdkLoadAttempts = 0;
-  const maxLoadAttempts = 2; // Allow one retry
-  
-  function loadSDK() {
-    sdkLoadAttempts++;
-    
-    // Show loading status
-    updateStatus(`🔄 Carregando SDK Pluggy... (tentativa ${sdkLoadAttempts}/${maxLoadAttempts})`, 'info');
+  // Remove instâncias antigas
+  if (window.PluggyConnect) {
+    updateStatus("Limpando instância antiga do PluggyConnect...", "warn");
+    delete window.PluggyConnect;
+  }
 
-    // Create and configure script element - NO async/defer for synchronous execution
-    const script = document.createElement("script");
-    script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.9.2/pluggy-connect.js";
-    // Explicitly ensure no async/defer attributes
-    script.async = false;
-    script.defer = false;
-    
-    // 10-second timeout for SDK availability
-    const sdkTimeout = setTimeout(() => {
-      console.log(`SDK timeout after 10 seconds (attempt ${sdkLoadAttempts})`);
-      
-      if (typeof window.PluggyConnect === 'undefined' && sdkLoadAttempts < maxLoadAttempts) {
-        updateStatus('⚠️ SDK não carregou em 10s. Tentando novamente...', 'warning');
-        
-        // Remove failed script
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-        
-        // Retry after 1 second
-        setTimeout(() => {
-          loadSDK();
-        }, 1000);
-      } else if (typeof window.PluggyConnect === 'undefined') {
-        updateStatus('❌ SDK falhou após todas as tentativas. Recarregue a página.', 'error');
-        setTimeout(() => statusEl.remove(), 8000);
+  // Inicia carregamento
+  updateStatus("Carregando SDK Pluggy v2.9.2...", "info");
+
+  // Cria a tag script apontando para o SDK local
+  const script = document.createElement("script");
+  script.src = "/static/pluggy-connect.js";
+  script.type = "text/javascript";
+  script.async = true;
+
+  let sdkLoaded = false;
+  let widgetReady = false;
+
+  // Timeout se o SDK não carregar
+  const timeout = setTimeout(() => {
+    if (!sdkLoaded) {
+      updateStatus("Erro ao carregar SDK: SDK não ficou disponível após 10 segundos", "error");
+    }
+  }, MAX_WAIT);
+
+  // Quando o SDK carregar
+  script.onload = () => {
+    sdkLoaded = true;
+    clearTimeout(timeout);
+    if (window.PluggyConnect) {
+      updateStatus("✅ SDK Pluggy carregado com sucesso!", "success");
+      waitForSDKReady();
+    } else {
+      updateStatus("❌ SDK carregado, mas PluggyConnect não disponível.", "error");
+    }
+  };
+
+  script.onerror = () => {
+    clearTimeout(timeout);
+    updateStatus("❌ Falha ao carregar o arquivo pluggy-connect.js", "error");
+  };
+
+  document.body.appendChild(script);
+
+  // Aguarda SDK estar pronto
+  async function waitForSDKReady() {
+    updateStatus("🔍 Verificando disponibilidade do SDK...", "info");
+
+    let attempts = 0;
+    while (attempts < 20) {
+      if (window.PluggyConnect) {
+        updateStatus("✅ SDK pronto para inicialização.", "success");
+        initializeWidget();
+        return;
       }
-    }, 10000);
+      attempts++;
+      updateStatus(`🔄 Aguardando SDK... (tentativa ${attempts}/20)`);
+      await new Promise(res => setTimeout(res, 500));
+    }
 
-    script.onload = () => {
-      console.log(`SDK script loaded successfully (attempt ${sdkLoadAttempts})`);
-      updateStatus('✅ SDK script carregado. Verificando execução...', 'success');
-      
-      // Enhanced SDK readiness validation with more frequent checks
-      let sdkReady = false;
-      let attempts = 0;
-      const maxAttempts = 20; // 10 seconds total (500ms * 20)
-      
-      const checkSDKReady = () => {
-        attempts++;
-        
-        if (typeof window.PluggyConnect !== 'undefined' && 
-            window.PluggyConnect.prototype && 
-            typeof window.PluggyConnect.prototype.open === 'function') {
-          
-          clearTimeout(sdkTimeout);
-          sdkReady = true;
-          console.log(`SDK ready after ${attempts * 500}ms (load attempt ${sdkLoadAttempts})`);
-          updateStatus(`✅ SDK pronto após ${attempts * 500}ms`, 'success');
-          window.dispatchEvent(new Event("pluggy_loaded"));
-          
-          // Hide status after 3 seconds
-          setTimeout(() => {
-            if (statusEl && statusEl.parentNode) {
-              statusEl.style.transition = 'opacity 0.3s ease';
-              statusEl.style.opacity = '0';
-              setTimeout(() => statusEl.remove(), 300);
-            }
-          }, 3000);
-          
-        } else if (attempts < maxAttempts) {
-          updateStatus(`🔄 Aguardando execução SDK... (${attempts}/${maxAttempts})`, 'info');
-          setTimeout(checkSDKReady, 500);
-        } else {
-          console.log(`SDK execution check failed after ${maxAttempts} attempts`);
-          // Don't clear timeout here - let the 10s timeout handle retry logic
-        }
-      };
-      
-      // Start checking SDK readiness immediately
-      checkSDKReady();
-    };
-
-    script.onerror = (error) => {
-      clearTimeout(sdkTimeout);
-      console.error(`SDK script loading error (attempt ${sdkLoadAttempts}):`, error);
-      
-      if (sdkLoadAttempts < maxLoadAttempts) {
-        updateStatus('⚠️ Erro ao carregar script. Tentando novamente...', 'warning');
-        setTimeout(() => {
-          loadSDK();
-        }, 1000);
-      } else {
-        updateStatus('❌ Erro ao carregar SDK após todas as tentativas.', 'error');
-        setTimeout(() => statusEl.remove(), 8000);
-      }
-    };
-
-    // Add script to head for synchronous loading
-    document.head.appendChild(script);
+    updateStatus("❌ SDK não ficou disponível após múltiplas tentativas.", "error");
   }
 
-  // Start initial SDK load
-  loadSDK();
+  // Inicializa widget Pluggy
+  async function initializeWidget() {
+    updateStatus("⚙️ Inicializando widget PluggyConnect...", "info");
+
+    const token = window.localStorage.getItem("pluggy_connect_token");
+    if (!token) {
+      updateStatus("⚠️ Nenhum token encontrado. Gere um novo token antes de continuar.", "warn");
+      return;
+    }
+
+    let retries = 0;
+    while (retries < MAX_RETRIES) {
+      try {
+        const pluggy = new window.PluggyConnect({
+          connectToken: token,
+          onOpen: () => updateStatus("🔗 Widget aberto com sucesso!", "success"),
+          onClose: () => updateStatus("❎ Widget fechado pelo usuário.", "warn"),
+          onError: (error) => updateStatus(`❌ Erro no widget: ${error.message}`, "error"),
+          onSuccess: (itemData) => {
+            updateStatus("✅ Conexão concluída com sucesso!", "success");
+            console.log("Item conectado:", itemData);
+          }
+        });
+
+        pluggy.open();
+        widgetReady = true;
+        updateStatus("🎉 Widget inicializado corretamente!", "success");
+        return;
+      } catch (err) {
+        retries++;
+        updateStatus(`❌ Erro ao abrir widget (${err.message}) — tentativa ${retries}/${MAX_RETRIES}`, "error");
+        await new Promise(res => setTimeout(res, RETRY_INTERVAL));
+      }
+    }
+
+    if (!widgetReady) {
+      updateStatus("❌ Falha ao inicializar o widget após múltiplas tentativas.", "error");
+    }
+  }
 })();
