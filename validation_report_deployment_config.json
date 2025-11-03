@@ -1,0 +1,55 @@
+{
+  "timestamp": "2024-11-03",
+  "overall_status": "needs_attention",
+  "summary": {
+    "total_checks": 5,
+    "passed": 2,
+    "warnings": 2,
+    "failed": 1
+  },
+  "configuration_status": {
+    "vercel_json": false,
+    "procfile": false,
+    "vercelignore": true,
+    "runtime_txt": true,
+    "dependencies": true,
+    "streamlit_config": true
+  },
+  "detailed_results": [
+    {
+      "component": "vercel.json",
+      "status": "warning",
+      "message": "Recommendations: Missing environment variables for headless operation",
+      "fix_applied": false
+    },
+    {
+      "component": "Procfile",
+      "status": "fail",
+      "message": "Configuration issues: Missing --server.headless=true flag",
+      "fix_applied": false
+    },
+    {
+      "component": ".vercelignore",
+      "status": "warning",
+      "message": ".vercelignore file does not exist (recommended for deployment optimization)",
+      "fix_applied": false
+    },
+    {
+      "component": "runtime.txt",
+      "status": "pass",
+      "message": "Python version python-3.11.9 is valid",
+      "fix_applied": false
+    },
+    {
+      "component": "requirements.txt",
+      "status": "pass",
+      "message": "All required dependencies are present and valid",
+      "fix_applied": false
+    }
+  ],
+  "recommendations": [
+    "Add environment variables to vercel.json for better configuration",
+    "Create or fix Procfile with proper Streamlit command",
+    "Create .vercelignore file to optimize deployment"
+  ]
+}
