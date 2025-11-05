@@ -1,26 +1,187 @@
 # app.py
 import os
+import sys
+import logging
+from datetime import datetime
 
+# =========================================================
+# ENHANCED LOGGING CONFIGURATION
+# =========================================================
+# Configure logging for deployment validation
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+def log_startup_info(message, level="INFO"):
+    """Enhanced logging function for startup validation"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    prefix = f"[RAILWAY {level}] {timestamp}"
+    print(f"{prefix} {message}")
+    if level == "ERROR":
+        logger.error(message)
+    elif level == "WARNING":
+        logger.warning(message)
+    else:
+        logger.info(message)
+
+# =========================================================
+# RAILWAY DEPLOYMENT CONFIGURATION
+# =========================================================
+# Load environment variables first
+from dotenv import load_dotenv
+load_dotenv()
+
+log_startup_info("=== RAILWAY DEPLOYMENT STARTUP VALIDATION ===")
+log_startup_info("Starting enhanced port configuration and validation...")
+
+# Configure Streamlit server settings for Railway deployment
+port = os.getenv("PORT")
+log_startup_info(f"Environment variable $PORT: {port}")
+
+# Enhanced port configuration with detailed logging
+if port is None:
+    log_startup_info("$PORT environment variable not found", "WARNING")
+    log_startup_info("Using fallback port 8080 for local/development environment")
+    port = "8080"
+else:
+    log_startup_info(f"Railway assigned dynamic port: {port}")
+
+# Enhanced port validation with detailed error handling
+try:
+    port_num = int(port)
+    if port_num < 1 or port_num > 65535:
+        raise ValueError(f"Port {port_num} is outside valid range (1-65535)")
+    log_startup_info(f"Port validation successful: {port_num}")
+    log_startup_info(f"Application will bind to port {port_num}")
+except ValueError as e:
+    log_startup_info(f"Port validation failed: {e}", "ERROR")
+    log_startup_info("Falling back to default port 8080", "WARNING")
+    port = "8080"
+    port_num = 8080
+
+# Set Streamlit server environment variables for Railway compatibility
+log_startup_info("Configuring Streamlit server environment variables...")
 os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
-os.environ["STREAMLIT_SERVER_PORT"] = os.getenv("PORT", "8080")
+os.environ["STREAMLIT_SERVER_PORT"] = str(port)
 os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
+
+log_startup_info("=== FINAL SERVER CONFIGURATION ===")
+log_startup_info(f"Server Port: {port}")
+log_startup_info(f"Server Address: 0.0.0.0 (external access enabled)")
+log_startup_info(f"Headless Mode: true (server deployment)")
+log_startup_info(f"Expected Network URL: http://0.0.0.0:{port}")
+
+# Enhanced environment variable validation with detailed reporting
+log_startup_info("=== ENVIRONMENT VARIABLE VALIDATION ===")
+required_vars = {
+    "PLUGGY_CLIENT_ID": "Pluggy API authentication",
+    "PLUGGY_CLIENT_SECRET": "Pluggy API authentication", 
+    "DB_HOST": "PostgreSQL database host",
+    "DB_USER": "PostgreSQL database user",
+    "DB_PASSWORD": "PostgreSQL database password",
+    "DB_NAME": "PostgreSQL database name"
+}
+
+missing_vars = []
+present_vars = []
+
+for var, description in required_vars.items():
+    value = os.getenv(var)
+    if not value:
+        missing_vars.append(var)
+        log_startup_info(f"❌ {var}: MISSING - {description}", "ERROR")
+    else:
+        present_vars.append(var)
+        # Log partial value for security (don't expose full credentials)
+        if "SECRET" in var or "PASSWORD" in var:
+            masked_value = f"{value[:4]}...{value[-4:]}" if len(value) > 8 else "***"
+            log_startup_info(f"✅ {var}: PRESENT - {description} (value: {masked_value})")
+        else:
+            log_startup_info(f"✅ {var}: PRESENT - {description} (value: {value})")
+
+# Optional environment variables
+optional_vars = {
+    "DB_PORT": os.getenv("DB_PORT", "5432"),
+    "DB_SSLMODE": os.getenv("DB_SSLMODE", "require")
+}
+
+log_startup_info("=== OPTIONAL ENVIRONMENT VARIABLES ===")
+for var, default_value in optional_vars.items():
+    actual_value = os.getenv(var, default_value)
+    log_startup_info(f"📋 {var}: {actual_value} {'(default)' if actual_value == default_value else '(configured)'}")
+
+# Summary of environment validation
+if missing_vars:
+    log_startup_info(f"❌ VALIDATION FAILED: {len(missing_vars)} required variables missing: {missing_vars}", "ERROR")
+    log_startup_info("Application may not function correctly without these variables", "ERROR")
+else:
+    log_startup_info(f"✅ VALIDATION PASSED: All {len(required_vars)} required environment variables present")
+
+log_startup_info(f"Environment validation complete: {len(present_vars)}/{len(required_vars)} required variables present")
+
+# =========================================================
+# DEPLOYMENT READINESS VALIDATION
+# =========================================================
+log_startup_info("=== RUNNING DEPLOYMENT READINESS VALIDATION ===")
+
+try:
+    from modules.deployment_validator import run_deployment_validation
+    
+    # Run comprehensive deployment validation
+    validation_results = run_deployment_validation()
+    
+    # Store validation results for potential UI display
+    deployment_ready = validation_results.get("overall", False)
+    validation_errors = validation_results.get("errors", [])
+    validation_warnings = validation_results.get("warnings", [])
+    
+    if deployment_ready:
+        log_startup_info("🎉 DEPLOYMENT VALIDATION PASSED - Application ready for production")
+    else:
+        log_startup_info("⚠️ DEPLOYMENT VALIDATION FAILED - Issues detected", "ERROR")
+        log_startup_info(f"Errors: {len(validation_errors)}, Warnings: {len(validation_warnings)}", "ERROR")
+        
+        # Continue execution but log the issues
+        for error in validation_errors[:5]:  # Limit to first 5 errors
+            log_startup_info(f"Critical: {error}", "ERROR")
+            
+except Exception as e:
+    log_startup_info(f"❌ Deployment validation failed to run: {e}", "ERROR")
+    log_startup_info("Continuing with application startup...", "WARNING")
 
 import requests
 import streamlit as st
 import traceback
-from dotenv import load_dotenv
 from modules.db import init_db, save_client
 
 # =========================================================
 # CONFIGURAÇÃO INICIAL
 # =========================================================
-load_dotenv()
 requests.adapters.DEFAULT_RETRIES = 3
 st.set_page_config(page_title="Financefly Connector", page_icon="🪁", layout="centered")
 
 PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID")
 PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET")
 PLUGGY_BASE_URL = "https://api.pluggy.ai"
+
+# Enhanced Pluggy API configuration validation
+log_startup_info("=== PLUGGY API CONFIGURATION VALIDATION ===")
+if PLUGGY_CLIENT_ID and PLUGGY_CLIENT_SECRET:
+    log_startup_info(f"✅ Pluggy API credentials configured")
+    log_startup_info(f"Client ID: {PLUGGY_CLIENT_ID[:8]}...{PLUGGY_CLIENT_ID[-4:]} (masked)")
+    log_startup_info(f"Client Secret: {'*' * (len(PLUGGY_CLIENT_SECRET) - 8)}{PLUGGY_CLIENT_SECRET[-4:]} (masked)")
+    log_startup_info(f"Pluggy Base URL: {PLUGGY_BASE_URL}")
+else:
+    log_startup_info("❌ Pluggy API credentials not found", "ERROR")
+    if not PLUGGY_CLIENT_ID:
+        log_startup_info("Missing PLUGGY_CLIENT_ID environment variable", "ERROR")
+    if not PLUGGY_CLIENT_SECRET:
+        log_startup_info("Missing PLUGGY_CLIENT_SECRET environment variable", "ERROR")
 
 # =========================================================
 # FUNÇÃO PARA CRIAR TOKEN DE CONEXÃO PLUGGY
@@ -66,12 +227,20 @@ if "form_data" not in st.session_state:
     st.session_state.form_data = {"name": "", "email": ""}
 
 # =========================================================
-# CONEXÃO COM O BANCO
+# DATABASE SCHEMA INITIALIZATION
 # =========================================================
+log_startup_info("=== DATABASE SCHEMA INITIALIZATION ===")
+
 try:
+    # Initialize database schema (connection already validated above)
+    log_startup_info("Initializing database schema...")
     init_db()
+    log_startup_info("✅ Database schema initialization successful")
+    
 except Exception as e:
-    st.error(f"Erro ao conectar no banco: {e}")
+    log_startup_info(f"❌ Database schema initialization failed: {str(e)}", "ERROR")
+    st.error(f"❌ Database initialization failed: {e}")
+    st.error("Please check the database configuration and try again.")
     st.code(traceback.format_exc())
 
 # =========================================================

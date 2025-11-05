@@ -1,0 +1,99 @@
+{
+  "timestamp": "2025-11-05T16:41:55.257618",
+  "base_url": "https://connector-finacefly.up.railway.app",
+  "tests": {
+    "Basic Connectivity": {
+      "status": "FAIL",
+      "message": "502 Bad Gateway - Application not responding correctly",
+      "details": {
+        "status_code": 502,
+        "response_time": 15.729469,
+        "content_length": 4682,
+        "headers": {
+          "Content-Length": "4682",
+          "Content-Type": "text/html",
+          "Server": "railway-edge",
+          "X-Railway-Edge": "railway/us-east4-eqdc4a",
+          "X-Railway-Fallback": "true",
+          "X-Railway-Request-Id": "rWGBByIjTpSre0AcezItjw",
+          "Date": "Wed, 05 Nov 2025 19:42:11 GMT"
+        }
+      },
+      "timestamp": "2025-11-05T16:42:11.004121"
+    },
+    "Streamlit Interface": {
+      "status": "FAIL",
+      "message": "Cannot test interface - HTTP 502",
+      "details": {},
+      "timestamp": "2025-11-05T16:42:26.184141"
+    },
+    "Application Content": {
+      "status": "FAIL",
+      "message": "Cannot test content - HTTP 502",
+      "details": {},
+      "timestamp": "2025-11-05T16:42:41.346865"
+    },
+    "Static Resources": {
+      "status": "WARNING",
+      "message": "Static resources not accessible: [\"/static/pluggy_connect.js (HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10))\", \"/static/pluggy_loader.js (HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10))\"]",
+      "details": {},
+      "timestamp": "2025-11-05T16:43:01.697099"
+    },
+    "Response Performance": {
+      "status": "FAIL",
+      "message": "Inconsistent responses or errors. Status codes: [502, 502, 502]",
+      "details": {
+        "average_response_time": 15.322612365086874,
+        "max_response_time": 15.641775608062744,
+        "response_times": [
+          15.641775608062744,
+          15.15748906135559,
+          15.168572425842285
+        ],
+        "status_codes": [
+          502,
+          502,
+          502
+        ],
+        "consistent_status": true
+      },
+      "timestamp": "2025-11-05T16:43:50.670788"
+    },
+    "Error Handling": {
+      "status": "WARNING",
+      "message": "Limited error handling. 0/3 errors handled",
+      "details": {
+        "error_responses": [
+          {
+            "path": "/nonexistent",
+            "error": "HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10)",
+            "handled": false
+          },
+          {
+            "path": "/invalid-page",
+            "error": "HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10)",
+            "handled": false
+          },
+          {
+            "path": "/test-404",
+            "error": "HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10)",
+            "handled": false
+          }
+        ]
+      },
+      "timestamp": "2025-11-05T16:44:21.591091"
+    }
+  },
+  "overall_status": "POOR",
+  "errors": [
+    "Basic Connectivity: 502 Bad Gateway - Application not responding correctly",
+    "Streamlit Interface: Cannot test interface - HTTP 502",
+    "Application Content: Cannot test content - HTTP 502",
+    "Response Performance: Inconsistent responses or errors. Status codes: [502, 502, 502]"
+  ],
+  "warnings": [
+    "Static Resources: Static resources not accessible: [\"/static/pluggy_connect.js (HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10))\", \"/static/pluggy_loader.js (HTTPSConnectionPool(host='connector-finacefly.up.railway.app', port=443): Read timed out. (read timeout=10))\"]",
+    "Error Handling: Limited error handling. 0/3 errors handled"
+  ],
+  "functionality_score": 0
+}

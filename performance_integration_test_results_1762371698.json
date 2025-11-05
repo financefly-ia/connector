@@ -1,0 +1,273 @@
+{
+  "timestamp": "2025-11-05T16:41:35.439519",
+  "performance_tests": {
+    "Token Generation Performance": {
+      "success": true,
+      "message": "Avg: 0.010s, Success: 100.0%",
+      "details": {
+        "total_tests": 5,
+        "successful_tests": 5,
+        "success_rate": 1.0,
+        "average_time": 0.010322141647338866,
+        "max_time": 0.015854358673095703,
+        "min_time": 0.008594274520874023,
+        "generation_times": [
+          0.015854358673095703,
+          0.009218215942382812,
+          0.008594274520874023,
+          0.0087738037109375,
+          0.009170055389404297
+        ],
+        "threshold_max_time": 5.0,
+        "threshold_success_rate": 0.95
+      },
+      "duration": 0.010322141647338866,
+      "timestamp": "2025-11-05T16:41:35.492969"
+    },
+    "API Response Times": {
+      "success": true,
+      "message": "Passed 3/3 response time tests",
+      "details": {
+        "scenario_results": {
+          "Fast Response": {
+            "expected_delay": 0.1,
+            "actual_duration": 0.10931062698364258,
+            "acceptable": true,
+            "api_key_received": true
+          },
+          "Normal Response": {
+            "expected_delay": 0.5,
+            "actual_duration": 0.5211536884307861,
+            "acceptable": true,
+            "api_key_received": true
+          },
+          "Slow Response": {
+            "expected_delay": 2.0,
+            "actual_duration": 2.0127265453338623,
+            "acceptable": true,
+            "api_key_received": true
+          }
+        },
+        "threshold_max_time": 3.0
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:41:38.136679"
+    },
+    "Concurrent Operations Performance": {
+      "success": true,
+      "message": "Success rate: 100.0%, Total time: 0.044s",
+      "details": {
+        "num_threads": 3,
+        "operations_per_thread": 2,
+        "total_operations": 6,
+        "successful_operations": 6,
+        "success_rate": 1.0,
+        "total_duration": 0.04390311241149902,
+        "avg_operation_time": 0.02130413055419922,
+        "all_results": [
+          {
+            "thread_id": 0,
+            "operation_id": 0,
+            "duration": 0.021981239318847656,
+            "success": true
+          },
+          {
+            "thread_id": 0,
+            "operation_id": 1,
+            "duration": 0.020955801010131836,
+            "success": true
+          },
+          {
+            "thread_id": 2,
+            "operation_id": 0,
+            "duration": 0.021210432052612305,
+            "success": true
+          },
+          {
+            "thread_id": 2,
+            "operation_id": 1,
+            "duration": 0.020920276641845703,
+            "success": true
+          },
+          {
+            "thread_id": 1,
+            "operation_id": 0,
+            "duration": 0.02232217788696289,
+            "success": true
+          },
+          {
+            "thread_id": 1,
+            "operation_id": 1,
+            "duration": 0.020434856414794922,
+            "success": true
+          }
+        ]
+      },
+      "duration": 0.04390311241149902,
+      "timestamp": "2025-11-05T16:41:38.181611"
+    }
+  },
+  "integration_tests": {
+    "Pluggy API Integration": {
+      "success": true,
+      "message": "All integration components working: True",
+      "details": {
+        "environment_validation": true,
+        "authentication_successful": true,
+        "token_generation_successful": true,
+        "error_handling_working": true,
+        "api_calls_made": 3,
+        "config_keys": [
+          "client_id",
+          "client_secret",
+          "base_url"
+        ]
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:41:38.197518"
+    },
+    "Error Handling Integration": {
+      "success": true,
+      "message": "Error handling integration working: True",
+      "details": {
+        "error_functions_available": true,
+        "error_formatting_works": true,
+        "pluggy_error_handling_works": true,
+        "available_functions": [
+          "log_and_display_error",
+          "display_environment_errors",
+          "handle_pluggy_error"
+        ]
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:41:38.197663"
+    },
+    "Module Integration": {
+      "success": true,
+      "message": "Module integration working: True",
+      "details": {
+        "modules_imported": true,
+        "cross_module_integration": true,
+        "database_integration": true,
+        "import_errors": []
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:41:38.197834"
+    }
+  },
+  "database_tests": {
+    "Database Performance": {
+      "success": true,
+      "message": "Avg insert: 0.003s, Success rate: 5/5",
+      "details": {
+        "operation_times": {
+          "initialization": 0.02000594139099121,
+          "average_insert": 0.0025849342346191406,
+          "max_insert": 0.003438711166381836,
+          "count_query": 8.130073547363281e-05,
+          "select_query": 4.38690185546875e-05
+        },
+        "successful_inserts": 5,
+        "total_test_clients": 5,
+        "insert_success_rate": 1.0,
+        "threshold_max_time": 2.0,
+        "records_in_db": 5
+      },
+      "duration": 0.0025849342346191406,
+      "timestamp": "2025-11-05T16:41:38.232105"
+    },
+    "Form Submission Simulation": {
+      "success": true,
+      "message": "Success rate: 100.0%, Avg time: 0.003s",
+      "details": {
+        "total_submissions": 3,
+        "successful_submissions": 3,
+        "success_rate": 1.0,
+        "average_submission_time": 0.0025370915730794272,
+        "submission_results": [
+          {
+            "submission": {
+              "name": "Carlos Silva",
+              "email": "carlos.silva@example.com",
+              "item_id": "item_form_test_001"
+            },
+            "success": true,
+            "duration": 0.0025458335876464844,
+            "saved_record": {
+              "id": 1,
+              "name": "Carlos Silva",
+              "email": "carlos.silva@example.com",
+              "item_id": "item_form_test_001",
+              "created_at": "2025-11-05 19:41:38"
+            }
+          },
+          {
+            "submission": {
+              "name": "Maria Santos",
+              "email": "maria.santos@example.com",
+              "item_id": "item_form_test_002"
+            },
+            "success": true,
+            "duration": 0.0020287036895751953,
+            "saved_record": {
+              "id": 2,
+              "name": "Maria Santos",
+              "email": "maria.santos@example.com",
+              "item_id": "item_form_test_002",
+              "created_at": "2025-11-05 19:41:38"
+            }
+          },
+          {
+            "submission": {
+              "name": "João Oliveira",
+              "email": "joao.oliveira@example.com",
+              "item_id": "item_form_test_003"
+            },
+            "success": true,
+            "duration": 0.0030367374420166016,
+            "saved_record": {
+              "id": 3,
+              "name": "João Oliveira",
+              "email": "joao.oliveira@example.com",
+              "item_id": "item_form_test_003",
+              "created_at": "2025-11-05 19:41:38"
+            }
+          }
+        ],
+        "threshold_success_rate": 0.95,
+        "threshold_max_time": 2.0
+      },
+      "duration": 0.0025370915730794272,
+      "timestamp": "2025-11-05T16:41:38.243843"
+    },
+    "Database Connection Reliability": {
+      "success": true,
+      "message": "Database connection logic properly structured: True",
+      "details": {
+        "functions_available": true,
+        "config_available": true,
+        "env_vars_configured": true,
+        "connection_logic_valid": true,
+        "required_db_vars": [
+          "DB_HOST",
+          "DB_USER",
+          "DB_PASSWORD",
+          "DB_NAME"
+        ],
+        "config_keys": [
+          "host",
+          "port",
+          "dbname",
+          "user",
+          "password",
+          "sslmode"
+        ]
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:41:38.247252"
+    }
+  },
+  "overall_status": "EXCELLENT",
+  "errors": [],
+  "warnings": []
+}

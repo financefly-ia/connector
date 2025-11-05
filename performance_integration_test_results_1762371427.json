@@ -1,0 +1,267 @@
+{
+  "timestamp": "2025-11-05T16:37:05.048972",
+  "performance_tests": {
+    "Token Generation Performance": {
+      "success": true,
+      "message": "Avg: 0.020s, Success: 100.0%",
+      "details": {
+        "total_tests": 5,
+        "successful_tests": 5,
+        "success_rate": 1.0,
+        "average_time": 0.01982436180114746,
+        "max_time": 0.042075157165527344,
+        "min_time": 0.011240720748901367,
+        "generation_times": [
+          0.042075157165527344,
+          0.020189523696899414,
+          0.013796091079711914,
+          0.011240720748901367,
+          0.011820316314697266
+        ],
+        "threshold_max_time": 5.0,
+        "threshold_success_rate": 0.95
+      },
+      "duration": 0.01982436180114746,
+      "timestamp": "2025-11-05T16:37:05.150276"
+    },
+    "API Response Times": {
+      "success": true,
+      "message": "Passed 3/3 response time tests",
+      "details": {
+        "scenario_results": {
+          "Fast Response": {
+            "expected_delay": 0.1,
+            "actual_duration": 0.11176085472106934,
+            "acceptable": true,
+            "api_key_received": true
+          },
+          "Normal Response": {
+            "expected_delay": 0.5,
+            "actual_duration": 0.5203437805175781,
+            "acceptable": true,
+            "api_key_received": true
+          },
+          "Slow Response": {
+            "expected_delay": 2.0,
+            "actual_duration": 2.0364773273468018,
+            "acceptable": true,
+            "api_key_received": true
+          }
+        },
+        "threshold_max_time": 3.0
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:37:07.819677"
+    },
+    "Concurrent Operations Performance": {
+      "success": true,
+      "message": "Success rate: 100.0%, Total time: 0.042s",
+      "details": {
+        "num_threads": 3,
+        "operations_per_thread": 2,
+        "total_operations": 6,
+        "successful_operations": 6,
+        "success_rate": 1.0,
+        "total_duration": 0.04220438003540039,
+        "avg_operation_time": 0.020449598630269367,
+        "all_results": [
+          {
+            "thread_id": 2,
+            "operation_id": 0,
+            "duration": 0.013634920120239258,
+            "success": true
+          },
+          {
+            "thread_id": 2,
+            "operation_id": 1,
+            "duration": 0.02660536766052246,
+            "success": true
+          },
+          {
+            "thread_id": 1,
+            "operation_id": 0,
+            "duration": 0.01379537582397461,
+            "success": true
+          },
+          {
+            "thread_id": 1,
+            "operation_id": 1,
+            "duration": 0.027039766311645508,
+            "success": true
+          },
+          {
+            "thread_id": 0,
+            "operation_id": 0,
+            "duration": 0.013983011245727539,
+            "success": true
+          },
+          {
+            "thread_id": 0,
+            "operation_id": 1,
+            "duration": 0.027639150619506836,
+            "success": true
+          }
+        ]
+      },
+      "duration": 0.04220438003540039,
+      "timestamp": "2025-11-05T16:37:07.862481"
+    }
+  },
+  "integration_tests": {
+    "Pluggy API Integration": {
+      "success": false,
+      "message": "All integration components working: False",
+      "details": {
+        "environment_validation": true,
+        "authentication_successful": true,
+        "token_generation_successful": true,
+        "error_handling_working": false,
+        "api_calls_made": 3,
+        "config_keys": [
+          "client_id",
+          "client_secret",
+          "base_url"
+        ]
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:37:07.915443"
+    },
+    "Error Handling Integration": {
+      "success": false,
+      "message": "Error handling integration test failed: cannot access local variable 'log_and_display_error' where it is not associated with a value",
+      "details": {},
+      "duration": null,
+      "timestamp": "2025-11-05T16:37:07.915930"
+    },
+    "Module Integration": {
+      "success": true,
+      "message": "Module integration working: True",
+      "details": {
+        "modules_imported": true,
+        "cross_module_integration": true,
+        "database_integration": true,
+        "import_errors": []
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:37:07.916182"
+    }
+  },
+  "database_tests": {
+    "Database Performance": {
+      "success": true,
+      "message": "Avg insert: 0.002s, Success rate: 5/5",
+      "details": {
+        "operation_times": {
+          "initialization": 0.008873224258422852,
+          "average_insert": 0.002392005920410156,
+          "max_insert": 0.002897500991821289,
+          "count_query": 9.846687316894531e-05,
+          "select_query": 5.030632019042969e-05
+        },
+        "successful_inserts": 5,
+        "total_test_clients": 5,
+        "insert_success_rate": 1.0,
+        "threshold_max_time": 2.0,
+        "records_in_db": 5
+      },
+      "duration": 0.002392005920410156,
+      "timestamp": "2025-11-05T16:37:07.939059"
+    },
+    "Form Submission Simulation": {
+      "success": true,
+      "message": "Success rate: 100.0%, Avg time: 0.002s",
+      "details": {
+        "total_submissions": 3,
+        "successful_submissions": 3,
+        "success_rate": 1.0,
+        "average_submission_time": 0.0024116039276123047,
+        "submission_results": [
+          {
+            "submission": {
+              "name": "Carlos Silva",
+              "email": "carlos.silva@example.com",
+              "item_id": "item_form_test_001"
+            },
+            "success": true,
+            "duration": 0.0025544166564941406,
+            "saved_record": {
+              "id": 1,
+              "name": "Carlos Silva",
+              "email": "carlos.silva@example.com",
+              "item_id": "item_form_test_001",
+              "created_at": "2025-11-05 19:37:07"
+            }
+          },
+          {
+            "submission": {
+              "name": "Maria Santos",
+              "email": "maria.santos@example.com",
+              "item_id": "item_form_test_002"
+            },
+            "success": true,
+            "duration": 0.0019152164459228516,
+            "saved_record": {
+              "id": 2,
+              "name": "Maria Santos",
+              "email": "maria.santos@example.com",
+              "item_id": "item_form_test_002",
+              "created_at": "2025-11-05 19:37:07"
+            }
+          },
+          {
+            "submission": {
+              "name": "João Oliveira",
+              "email": "joao.oliveira@example.com",
+              "item_id": "item_form_test_003"
+            },
+            "success": true,
+            "duration": 0.002765178680419922,
+            "saved_record": {
+              "id": 3,
+              "name": "João Oliveira",
+              "email": "joao.oliveira@example.com",
+              "item_id": "item_form_test_003",
+              "created_at": "2025-11-05 19:37:07"
+            }
+          }
+        ],
+        "threshold_success_rate": 0.95,
+        "threshold_max_time": 2.0
+      },
+      "duration": 0.0024116039276123047,
+      "timestamp": "2025-11-05T16:37:07.950205"
+    },
+    "Database Connection Reliability": {
+      "success": true,
+      "message": "Database connection logic properly structured: True",
+      "details": {
+        "functions_available": true,
+        "config_available": true,
+        "env_vars_configured": true,
+        "connection_logic_valid": true,
+        "required_db_vars": [
+          "DB_HOST",
+          "DB_USER",
+          "DB_PASSWORD",
+          "DB_NAME"
+        ],
+        "config_keys": [
+          "host",
+          "port",
+          "dbname",
+          "user",
+          "password",
+          "sslmode"
+        ]
+      },
+      "duration": null,
+      "timestamp": "2025-11-05T16:37:07.953521"
+    }
+  },
+  "overall_status": "ACCEPTABLE",
+  "errors": [
+    "Pluggy API Integration: All integration components working: False",
+    "Error Handling Integration: Error handling integration test failed: cannot access local variable 'log_and_display_error' where it is not associated with a value"
+  ],
+  "warnings": []
+}

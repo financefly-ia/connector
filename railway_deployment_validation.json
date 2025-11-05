@@ -1,0 +1,81 @@
+{
+  "timestamp": "2025-11-05T16:15:24.232442",
+  "tests": {
+    "App Structure": {
+      "status": "PASS",
+      "message": "Required files present. Optional files: ['start.sh', 'runtime.txt', 'requirements.txt', '.env']",
+      "details": {
+        "required": [
+          "app.py",
+          "Procfile"
+        ],
+        "optional": [
+          "start.sh",
+          "runtime.txt",
+          "requirements.txt",
+          ".env"
+        ]
+      },
+      "timestamp": "2025-11-05T16:15:24.241490"
+    },
+    "Procfile Configuration": {
+      "status": "PASS",
+      "message": "Procfile correctly configured for Railway",
+      "details": {},
+      "timestamp": "2025-11-05T16:15:24.251080"
+    },
+    "Port Configuration": {
+      "status": "PASS",
+      "message": "Port configuration working correctly (port: 8080)",
+      "details": {},
+      "timestamp": "2025-11-05T16:15:24.251609"
+    },
+    "Environment Variables": {
+      "status": "WARNING",
+      "message": "Missing environment variables: ['PLUGGY_CLIENT_ID', 'PLUGGY_CLIENT_SECRET', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME']",
+      "details": {
+        "missing": [
+          "PLUGGY_CLIENT_ID",
+          "PLUGGY_CLIENT_SECRET",
+          "DB_HOST",
+          "DB_USER",
+          "DB_PASSWORD",
+          "DB_NAME"
+        ],
+        "present": []
+      },
+      "timestamp": "2025-11-05T16:15:24.251861"
+    },
+    "Startup Script": {
+      "status": "PASS",
+      "message": "start.sh correctly configured",
+      "details": {},
+      "timestamp": "2025-11-05T16:15:24.263916"
+    },
+    "Python Runtime": {
+      "status": "PASS",
+      "message": "Runtime specified: python-3.11.9",
+      "details": {
+        "version": "3.11.9"
+      },
+      "timestamp": "2025-11-05T16:15:24.275055"
+    },
+    "Python Runtime (Current)": {
+      "status": "PASS",
+      "message": "Current Python version: 3.13.7",
+      "details": {},
+      "timestamp": "2025-11-05T16:15:24.275305"
+    },
+    "Dependencies": {
+      "status": "PASS",
+      "message": "Essential dependencies found in 5 total requirements",
+      "details": {},
+      "timestamp": "2025-11-05T16:15:24.284552"
+    }
+  },
+  "overall_status": "WARNING",
+  "errors": [],
+  "warnings": [
+    "Environment Variables: Missing environment variables: ['PLUGGY_CLIENT_ID', 'PLUGGY_CLIENT_SECRET', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME']"
+  ]
+}
