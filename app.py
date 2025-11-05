@@ -9,7 +9,7 @@ import requests
 import streamlit as st
 import traceback
 from dotenv import load_dotenv
-from db import init_db, save_client
+from modules.db import init_db, save_client
 
 # =========================================================
 # CONFIGURAÇÃO INICIAL
