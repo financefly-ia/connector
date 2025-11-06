@@ -1,6 +1,0 @@
-# Alternative Procfile configuration using bash script
-# This provides a more robust startup mechanism with environment variable validation
-# and fallback port configuration
-
-# Use bash script for startup (recommended for complex deployments)
-web: bash start.sh
