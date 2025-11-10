@@ -56,7 +56,7 @@ if item_id:
         st.warning("itemId recebido, mas nome/email não foram preenchidos.")
 
     st.query_params.clear()
-    st.stop()
+    st.rerun()
 
 # =========================================================
 # FORM
@@ -69,7 +69,7 @@ with st.form("client_form"):
 if submit:
     if not name or not email:
         st.warning("Preencha todos os campos.")
-        st.stop()
+        st.rerun()
 
     st.session_state.form_data = {"name": name, "email": email}
 
@@ -79,7 +79,7 @@ if submit:
     except Exception as e:
         st.error(f"Erro ao gerar token: {e}")
         print("🔥 ERRO create_connect_token:", e)
-        st.stop()
+        st.rerun()
 
 # =========================================================
 # WIDGET PLUGGY
