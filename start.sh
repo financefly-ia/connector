@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo "PORT env var from Railway: $PORT"
 echo "Starting Streamlit app on Railway..."
 
 # Definir porta padrão
