@@ -52,9 +52,16 @@ def get_conn():
 
 
 def init_db():
-    with get_conn() as conn, conn.cursor() as cur:
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
         cur.execute(DDL)
         conn.commit()
+        cur.close()
+        conn.close()
+        print("✅ init_db executado com sucesso")
+    except Exception as e:
+        print("🔥 ERRO init_db:", e)
 
 
 def save_client(name, email, item_id):

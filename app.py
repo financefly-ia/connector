@@ -14,11 +14,14 @@ st.set_page_config(
 )
 
 # =========================================================
-# STARTUP (somente depois que a página carregar)
+# STARTUP SAFE
 # =========================================================
 with st.spinner("Inicializando ambiente..."):
-    startup_validation()   # ✅ valida env + porta + pluggy + db
-    init_db()              # ✅ inicializa schema sem travar o app
+    try:
+        startup_validation()
+        # init_db()  # ← DESATIVADO PQ CAUSA CRASH
+    except Exception as e:
+        st.warning(f"Aviso durante inicialização: {e}")
 
 # =========================================================
 # SESSION STATE
@@ -48,6 +51,7 @@ if item_id:
             st.success("Conta conectada com sucesso!")
         except Exception as e:
             st.error(f"Erro ao salvar no banco: {e}")
+            print("🔥 ERRO save_client:", e)
     else:
         st.warning("itemId recebido, mas nome/email não foram preenchidos.")
 
@@ -74,6 +78,7 @@ if submit:
         st.session_state.connect_token = token
     except Exception as e:
         st.error(f"Erro ao gerar token: {e}")
+        print("🔥 ERRO create_connect_token:", e)
         st.stop()
 
 # =========================================================
