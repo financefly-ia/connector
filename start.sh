@@ -1,28 +1,12 @@
 #!/bin/sh
 
 echo "PORT env var from Railway: $PORT"
+
+# fallback porto
+PORT=${PORT:-8080}
+
 echo "Starting Streamlit app on Railway..."
-
-# Definir porta padrão
-if [ -z "$PORT" ]; then
-  echo "PORT not set. Using fallback 8080."
-  PORT=8080
-else
-  echo "Received PORT=$PORT"
-fi
-
-# Validar se PORT é número
-case $PORT in
-  ''|*[!0-9]*)
-    echo "Invalid PORT=$PORT. Falling back to 8080."
-    PORT=8080
-    ;;
-esac
-
+echo "Received PORT=$PORT"
 echo "Using port: $PORT"
 
-# Rodar Streamlit corretamente
-exec streamlit run app.py \
-  --server.port=$PORT \
-  --server.address=0.0.0.0 \
-  --server.headless=true
+exec streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
