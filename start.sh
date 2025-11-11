@@ -1,15 +1,12 @@
 #!/bin/sh
 
 echo "PORT env var from Railway: $PORT"
-
-# fallback porto
 PORT=${PORT:-8080}
 
-echo "Starting Streamlit app on Railway..."
-echo "Received PORT=$PORT"
-echo "Using port: $PORT"
+echo "Starting Streamlit + Health Server"
 
-exec streamlit run app.py \
-    --server.port=$PORT \
-    --server.address=0.0.0.0 \
-    --server.headless=true
+# Start health server in background ✅
+python3 health_app.py &
+
+# Now start streamlit ✅
+exec streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
