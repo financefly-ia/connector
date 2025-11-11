@@ -9,4 +9,7 @@ echo "Starting Streamlit app on Railway..."
 echo "Received PORT=$PORT"
 echo "Using port: $PORT"
 
-exec streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+exec streamlit run app.py \
+    --server.port=$PORT \
+    --server.address=0.0.0.0 \
+    --server.headless=true
