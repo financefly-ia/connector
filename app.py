@@ -1,8 +1,13 @@
 import os
+import sys
 import streamlit as st
 
-print("🧩 STEP 1: Iniciando importações...")
+print("🧩 STEP 0: app.py foi iniciado com sucesso 🚀")
+sys.stdout.flush()
 
+# =========================================================
+# IMPORTS
+# =========================================================
 try:
     from modules.validator import startup_validation
     print("🧩 STEP 2: Import validator OK")
@@ -12,6 +17,7 @@ try:
     print("🧩 STEP 4: Import db OK")
 except Exception as e:
     print(f"🔥 ERRO nos imports: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # CONFIG STREAMLIT
@@ -25,6 +31,7 @@ try:
     print("🧩 STEP 5: Configuração do Streamlit OK")
 except Exception as e:
     print(f"🔥 ERRO na configuração do Streamlit: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # STARTUP SAFE
@@ -36,6 +43,7 @@ try:
 except Exception as e:
     st.warning(f"Aviso durante inicialização: {e}")
     print(f"🔥 ERRO no startup_validation: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # SESSION STATE
@@ -53,6 +61,7 @@ try:
     print("🧩 STEP 7: Session state inicializado OK")
 except Exception as e:
     print(f"🔥 ERRO no session_state: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # VERIFICAÇÃO URL (itemId)
@@ -82,6 +91,7 @@ try:
         st.session_state.item_processed = True
 except Exception as e:
     print(f"🔥 ERRO na verificação de itemId: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # UI / FORM
@@ -99,6 +109,7 @@ try:
     print("🧩 STEP 11: Form renderizado")
 except Exception as e:
     print(f"🔥 ERRO ao renderizar formulário: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # SUBMIT FORM
@@ -120,6 +131,7 @@ try:
                 print(f"🔥 ERRO create_connect_token: {e}")
 except Exception as e:
     print(f"🔥 ERRO no bloco submit: {e}")
+sys.stdout.flush()
 
 # =========================================================
 # WIDGET PLUGGY
@@ -145,5 +157,7 @@ try:
         print("🧩 STEP 15: Widget Pluggy renderizado com sucesso")
 except Exception as e:
     print(f"🔥 ERRO no widget Pluggy: {e}")
+sys.stdout.flush()
 
-print("✅ FINAL: app.py carregado completamente com sucesso.")
+print("🧩 STEP FINAL: script carregado até o fim.")
+sys.stdout.flush()
