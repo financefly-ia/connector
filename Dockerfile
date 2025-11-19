@@ -29,12 +29,9 @@ RUN pip install -r requirements.txt
 # Copia o código
 COPY . .
 
-# Expõe porta (opcional)
+# Expõe porta (opcional) — Railway injetará $PORT dinamicamente
 EXPOSE 8501
 
-# Porta padrão (pode ser sobrescrita pelo ambiente, ex: Railway fornece $PORT)
-ENV PORT=8501
-
-# Comando default para rodar o Streamlit — usa a variável $PORT para compatibilidade com plataformas
+# Comando default para rodar o Streamlit – usa a variável $PORT para compatibilidade com plataformas
 # Usamos shell form via `sh -c` para expandir a variável de ambiente.
 CMD ["sh", "-c", "streamlit run app.py --server.port ${PORT} --server.address 0.0.0.0 --server.headless true"]
