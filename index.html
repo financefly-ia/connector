@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Financefly Connector — Pluggy</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script
+      defer
+      src="https://cdn.pluggy.ai/pluggy-connect/v2.9.2/pluggy-connect.js"
+    ></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <div class="background-noise" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Financefly · Pluggy</p>
+          <h1>Conecte contas em segundos</h1>
+          <p class="lede">
+            Gere tokens Pluggy diretamente do browser, abra o widget oficial e
+            receba o <strong>itemId</strong> com visual futurista pronto para
+            Vercel.
+          </p>
+          <div class="hero-meta">
+            <span class="status-pill">Widget Pluggy v2.9.2</span>
+            <span class="status-pill neutral">Modo estático / Vercel</span>
+          </div>
+        </div>
+        <div class="hero-graphic">
+          <div class="orb orb-lg"></div>
+          <div class="orb orb-sm"></div>
+          <div class="radar">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel connect-panel">
+        <div class="panel-head">
+          <div>
+            <p class="panel-title">Iniciar conexão financeira</p>
+            <p class="panel-subtitle">
+              Autentica, gera token e chama o widget oficial sem backend.
+            </p>
+          </div>
+          <button id="log-toggle" type="button" class="ghost-button">
+            Mostrar logs
+          </button>
+        </div>
+
+        <form id="connect-form" class="form-grid">
+          <label class="field">
+            <span>Nome completo (opcional)</span>
+            <input
+              id="full-name"
+              type="text"
+              name="name"
+              placeholder="Ex.: Ana Financefly"
+              autocomplete="name"
+            />
+          </label>
+          <label class="field">
+            <span>E-mail para identificar o token (opcional)</span>
+            <input
+              id="user-email"
+              type="email"
+              name="email"
+              placeholder="Ex.: ana@financefly.io"
+              autocomplete="email"
+            />
+          </label>
+          <button id="connect-btn" type="submit" class="primary-button">
+            Iniciar conexão financeira
+          </button>
+        </form>
+      </section>
+
+      <section class="panel status-panel">
+        <div class="metric">
+          <p class="metric-label">Item ID ativo</p>
+          <p id="item-id" class="metric-value">Nenhuma conexão ainda</p>
+          <p id="item-updated" class="metric-footnote">
+            Aguarde a finalização do widget.
+          </p>
+        </div>
+        <div class="metric">
+          <p class="metric-label">Status do fluxo</p>
+          <span id="status-chip" class="chip" data-state="idle"
+            >Aguardando ação</span
+          >
+          <p class="metric-footnote">
+            O widget abre após o token ser gerado com sucesso.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel logs-panel">
+        <div id="log-container" class="log-container" hidden>
+          <ul id="log-stream" aria-live="polite"></ul>
+        </div>
+        <p class="log-hint">
+          Os registros mostram cada etapa: autenticação, token, widget e
+          callbacks.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
