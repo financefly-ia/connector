@@ -2,8 +2,8 @@
 
 (function () {
   const pluggyConfig = Object.freeze({
-    clientId: '20872a07-7c18-448c-b835-ac39f6bca261',
-    clientSecret: 'beedbf4d-fafc-4e23-883e-25ba698cde28',
+    clientId: 'cd43d65a-0e1d-4f1a-87f3-1d1c20081450',
+    clientSecret: 'efe33d13-e9ba-4104-82b7-f55832a3f660',
     baseUrl: 'https://api.pluggy.ai'
   });
 
