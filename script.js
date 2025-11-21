@@ -178,17 +178,38 @@
     )}`;
   }
 
+  function instantiatePluggy(PluggyConnect, options) {
+    if (PluggyConnect && typeof PluggyConnect.create === 'function') {
+      return Promise.resolve(PluggyConnect.create(options));
+    }
+    return Promise.resolve(new PluggyConnect(options));
+  }
+
+  function openPluggyInstance(instance, PluggyConnect) {
+    if (instance && typeof instance.open === 'function') {
+      instance.open();
+      return instance;
+    }
+    if (PluggyConnect && typeof PluggyConnect.open === 'function') {
+      PluggyConnect.open();
+      return PluggyConnect;
+    }
+    throw new Error('SDK Pluggy indisponível: método open() não encontrado.');
+  }
+
   function openPluggyWidget(token, metadata) {
     return ensurePluggyReady().then((PluggyConnect) => {
       pushLog('Abrindo widget Pluggy...');
-      setStatus('Widget aberto', 'success');
-      const connect = new PluggyConnect({
+      const options = {
         connectToken: token,
         includeSandbox: false,
         language: 'pt',
         theme: 'dark',
         userMetadata: metadata,
-        onOpen: () => pushLog('Widget aberto.', 'success'),
+        onOpen: () => {
+          setStatus('Widget aberto', 'success');
+          pushLog('Widget aberto.', 'success');
+        },
         onClose: () => pushLog('Widget fechado.'),
         onError: (err) => {
           pushLog(`Widget erro: ${err?.message || err}`, 'error');
@@ -201,9 +222,19 @@
             setStatus('Item conectado', 'success');
           }
         }
-      });
-      connect.open();
-      uiState.pluggyInstance = connect;
+      };
+
+      return instantiatePluggy(PluggyConnect, options)
+        .then((instance) => {
+          const activeInstance = openPluggyInstance(instance, PluggyConnect);
+          uiState.pluggyInstance = activeInstance;
+          return activeInstance;
+        })
+        .catch((error) => {
+          pushLog(`Falha ao inicializar widget: ${error?.message || error}`, 'error');
+          setStatus('Erro: verifique os logs', 'error');
+          throw error;
+        });
     });
   }
 
