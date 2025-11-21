@@ -185,16 +185,29 @@
     return Promise.resolve(new PluggyConnect(options));
   }
 
-  function openPluggyInstance(instance, PluggyConnect) {
+  async function openPluggyInstance(instance, PluggyConnect) {
     if (instance && typeof instance.open === 'function') {
       instance.open();
       return instance;
     }
+
+    const hasInit = instance && typeof instance.init === 'function';
+    const hasShow = instance && typeof instance.show === 'function';
+
+    if (hasInit) {
+      await instance.init();
+      if (hasShow) {
+        await instance.show();
+      }
+      return instance;
+    }
+
     if (PluggyConnect && typeof PluggyConnect.open === 'function') {
       PluggyConnect.open();
       return PluggyConnect;
     }
-    throw new Error('SDK Pluggy indisponível: método open() não encontrado.');
+
+    throw new Error('SDK Pluggy indisponível: método open/show não disponível.');
   }
 
   function openPluggyWidget(token, metadata) {
@@ -225,11 +238,12 @@
       };
 
       return instantiatePluggy(PluggyConnect, options)
-        .then((instance) => {
-          const activeInstance = openPluggyInstance(instance, PluggyConnect);
-          uiState.pluggyInstance = activeInstance;
-          return activeInstance;
-        })
+        .then((instance) =>
+          openPluggyInstance(instance, PluggyConnect).then((activeInstance) => {
+            uiState.pluggyInstance = activeInstance;
+            return activeInstance;
+          })
+        )
         .catch((error) => {
           pushLog(`Falha ao inicializar widget: ${error?.message || error}`, 'error');
           setStatus('Erro: verifique os logs', 'error');
