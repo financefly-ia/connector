@@ -1,15 +1,9 @@
 'use strict';
 
 (function () {
-  const pluggyConfig = Object.freeze({
-    clientId: 'cd43d65a-0e1d-4f1a-87f3-1d1c20081450',
-    clientSecret: 'efe33d13-e9ba-4104-82b7-f55832a3f660',
-    baseUrl: 'https://api.pluggy.ai'
-  });
-
   const refs = {
     form: document.getElementById('connect-form'),
-    name: document.getElementById('full-name'),
+    name: document.getElementById('user-name'),
     email: document.getElementById('user-email'),
     button: document.getElementById('connect-btn'),
     statusChip: document.getElementById('status-chip'),
@@ -25,7 +19,8 @@
     logCount: 0,
     connectToken: null,
     pluggyInstance: null,
-    pluggyReadyPromise: null
+    pluggyReadyPromise: null,
+    currentClientUserId: null
   };
 
   const LOG_LIMIT = 80;
@@ -108,44 +103,11 @@
     return uiState.pluggyReadyPromise;
   }
 
-  async function authenticatePluggy() {
-    pushLog('Autenticando com Pluggy...');
-    const response = await fetch(`${pluggyConfig.baseUrl}/auth`, {
+  async function getConnectToken(clientUserId, itemId) {
+    const response = await fetch('/api/connect-token', {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        clientId: pluggyConfig.clientId,
-        clientSecret: pluggyConfig.clientSecret
-      })
-    });
-
-    if (!response.ok) {
-      const info = await response.text();
-      throw new Error(`Falha na autenticação (${response.status}): ${info}`);
-    }
-    const data = await response.json();
-    if (!data.apiKey) {
-      throw new Error('API key não retornada pelo Pluggy.');
-    }
-    pushLog('API key recebida com sucesso.', 'success');
-    return data.apiKey;
-  }
-
-  async function requestConnectToken(apiKey, userId) {
-    pushLog('Gerando connect token...');
-    const response = await fetch(`${pluggyConfig.baseUrl}/connect_token`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'X-API-KEY': apiKey
-      },
-      body: JSON.stringify(
-        userId ? { clientUserId: userId } : {}
-      )
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientUserId, itemId })
     });
 
     if (!response.ok) {
@@ -155,11 +117,24 @@
 
     const data = await response.json();
     if (!data.accessToken) {
-      throw new Error('Pluggy não retornou accessToken.');
+      throw new Error('Token indisponível no backend.');
     }
-    uiState.connectToken = data.accessToken;
-    pushLog('Connect token pronto.', 'success');
     return data.accessToken;
+  }
+
+  async function saveItem(payload) {
+    const response = await fetch('/api/save-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const info = await response.text();
+      throw new Error(`Erro ao salvar item (${response.status}): ${info}`);
+    }
+
+    return response.json();
   }
 
   function deriveUserId() {
@@ -228,11 +203,33 @@
           pushLog(`Widget erro: ${err?.message || err}`, 'error');
           setStatus('Erro no widget', 'error');
         },
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           pushLog('Conta conectada e itemId retornado.', 'success');
-          if (data?.itemId) {
-            decorateItemId(data.itemId);
-            setStatus('Item conectado', 'success');
+          try {
+            const clientUserId = uiState.currentClientUserId || deriveUserId();
+            const itemId = data?.item?.id || data?.itemId;
+            const institutionId = data?.institution?.id;
+            const institutionName = data?.institution?.name;
+            const userName = refs.name.value.trim();
+            const userEmail = refs.email.value.trim();
+
+            if (itemId) {
+              decorateItemId(itemId);
+              setStatus('Item conectado', 'success');
+            }
+
+            await saveItem({
+              clientUserId,
+              itemId,
+              userName,
+              userEmail,
+              institutionId,
+              institutionName
+            });
+            pushLog('Dados enviados ao backend.', 'success');
+          } catch (err) {
+            console.error(err);
+            pushLog(`Erro ao salvar item: ${err.message || err}`, 'error');
           }
         }
       };
@@ -258,9 +255,12 @@
     setStatus('Gerando token...', 'loading');
 
     try {
-      const userId = deriveUserId();
-      const apiKey = await authenticatePluggy();
-      const connectToken = await requestConnectToken(apiKey, userId);
+      const clientUserId = deriveUserId();
+      uiState.currentClientUserId = clientUserId;
+      pushLog('Gerando connect token...');
+      const connectToken = await getConnectToken(clientUserId);
+      uiState.connectToken = connectToken;
+      pushLog('Connect token pronto.', 'success');
       const metadata = {
         name: refs.name.value.trim() || undefined,
         email: refs.email.value.trim() || undefined
