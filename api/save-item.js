@@ -67,14 +67,7 @@ module.exports = async function handler(req, res) {
     institutionName,
   } = body;
 
-  if (
-    !clientUserId ||
-    !itemId ||
-    !userName ||
-    !userEmail ||
-    !institutionId ||
-    !institutionName
-  ) {
+  if (!clientUserId || !itemId || !institutionId || !institutionName) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 

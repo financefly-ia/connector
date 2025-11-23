@@ -169,9 +169,19 @@
           pushLog('Conta conectada e itemId retornado.', 'success');
           try {
             const clientUserId = uiState.currentClientUserId || deriveUserId();
-            const itemId = data?.item?.id || data?.itemId;
-            const institutionId = data?.institution?.id;
-            const institutionName = data?.institution?.name;
+            const itemId =
+              data?.item?.id ||
+              data?.itemId ||
+              data?.item?.itemId ||
+              null;
+            const institutionId =
+              data?.institution?.id ||
+              data?.item?.institution?.id ||
+              null;
+            const institutionName =
+              data?.institution?.name ||
+              data?.item?.institution?.name ||
+              null;
 
             if (itemId) {
               refs.itemId.textContent = itemId;
