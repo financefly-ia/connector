@@ -145,24 +145,12 @@
     return uiState.pluggyReadyPromise;
   }
 
-  async function openPluggyInstance(connect, options) {
-    const instance = await connect.create(options);
-    if (typeof instance.init === 'function') {
-      await instance.init();
-    }
-    if (typeof instance.show === 'function') {
-      await instance.show();
-    } else if (typeof instance.open === 'function') {
-      instance.open();
-    }
-    return instance;
-  }
-
-  function openPluggyWidget(token, metadata) {
-    return ensurePluggyReady().then((PluggyConnect) => {
+  async function openPluggyWidget(token, metadata) {
+    try {
+      const PluggyConnect = await ensurePluggyReady();
       pushLog('Abrindo widget Pluggy...');
 
-      const options = {
+      const widget = new PluggyConnect({
         connectToken: token,
         includeSandbox: false,
         language: 'pt',
@@ -188,7 +176,9 @@
             if (itemId) {
               refs.itemId.textContent = itemId;
               refs.itemId.classList.add('highlight');
-              refs.itemUpdated.textContent = `Última atualização ${formatTime(new Date())}`;
+              refs.itemUpdated.textContent = `Última atualização ${formatTime(
+                new Date()
+              )}`;
               setStatus('Item conectado', 'success');
             }
 
@@ -207,19 +197,17 @@
             pushLog(`Erro ao salvar item: ${error.message || error}`, 'error');
           }
         }
-      };
+      });
 
-      return openPluggyInstance(PluggyConnect, options)
-        .then((instance) => {
-          uiState.pluggyInstance = instance;
-          return instance;
-        })
-        .catch((error) => {
-          pushLog(`Falha ao inicializar widget: ${error?.message || error}`, 'error');
-          setStatus('Erro: verifique os logs', 'error');
-          throw error;
-        });
-    });
+      uiState.pluggyInstance = widget;
+      await widget.init();
+      await widget.open();
+      return widget;
+    } catch (error) {
+      pushLog(`Falha ao inicializar widget: ${error?.message || error}`, 'error');
+      setStatus('Erro: verifique os logs', 'error');
+      throw error;
+    }
   }
 
   async function handleSubmit(event) {
