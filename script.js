@@ -76,6 +76,48 @@
     }
   }
 
+  function deriveUserId() {
+    const email = refs.email.value.trim();
+    if (email) {
+      return email.toLowerCase();
+    }
+    return `financefly-web-${Date.now()}`;
+  }
+
+  async function getConnectToken(clientUserId, itemId) {
+    const response = await fetch('/api/connect-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientUserId, itemId })
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Erro ao gerar token (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+    if (!data.accessToken) {
+      throw new Error('Token indisponível no backend.');
+    }
+    return data.accessToken;
+  }
+
+  async function saveItem(payload) {
+    const response = await fetch('/api/save-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Erro ao salvar item (${response.status}): ${text}`);
+    }
+
+    return response.json();
+  }
+
   function ensurePluggyReady() {
     if (uiState.pluggyReadyPromise) {
       return uiState.pluggyReadyPromise;
@@ -103,91 +145,23 @@
     return uiState.pluggyReadyPromise;
   }
 
-  async function getConnectToken(clientUserId, itemId) {
-    const response = await fetch('/api/connect-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientUserId, itemId })
-    });
-
-    if (!response.ok) {
-      const info = await response.text();
-      throw new Error(`Erro ao gerar token (${response.status}): ${info}`);
-    }
-
-    const data = await response.json();
-    if (!data.accessToken) {
-      throw new Error('Token indisponível no backend.');
-    }
-    return data.accessToken;
-  }
-
-  async function saveItem(payload) {
-    const response = await fetch('/api/save-item', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const info = await response.text();
-      throw new Error(`Erro ao salvar item (${response.status}): ${info}`);
-    }
-
-    return response.json();
-  }
-
-  function deriveUserId() {
-    const email = refs.email.value.trim();
-    if (email) {
-      return email.toLowerCase();
-    }
-    return `financefly-web-${Date.now()}`;
-  }
-
-  function decorateItemId(itemId) {
-    refs.itemId.textContent = itemId;
-    refs.itemId.classList.add('highlight');
-    refs.itemUpdated.textContent = `Última atualização ${formatTime(
-      new Date()
-    )}`;
-  }
-
-  function instantiatePluggy(PluggyConnect, options) {
-    if (PluggyConnect && typeof PluggyConnect.create === 'function') {
-      return Promise.resolve(PluggyConnect.create(options));
-    }
-    return Promise.resolve(new PluggyConnect(options));
-  }
-
-  async function openPluggyInstance(instance, PluggyConnect) {
-    if (instance && typeof instance.open === 'function') {
-      instance.open();
-      return instance;
-    }
-
-    const hasInit = instance && typeof instance.init === 'function';
-    const hasShow = instance && typeof instance.show === 'function';
-
-    if (hasInit) {
+  async function openPluggyInstance(connect, options) {
+    const instance = await connect.create(options);
+    if (typeof instance.init === 'function') {
       await instance.init();
-      if (hasShow) {
-        await instance.show();
-      }
-      return instance;
     }
-
-    if (PluggyConnect && typeof PluggyConnect.open === 'function') {
-      PluggyConnect.open();
-      return PluggyConnect;
+    if (typeof instance.show === 'function') {
+      await instance.show();
+    } else if (typeof instance.open === 'function') {
+      instance.open();
     }
-
-    throw new Error('SDK Pluggy indisponível: método open/show não disponível.');
+    return instance;
   }
 
   function openPluggyWidget(token, metadata) {
     return ensurePluggyReady().then((PluggyConnect) => {
       pushLog('Abrindo widget Pluggy...');
+
       const options = {
         connectToken: token,
         includeSandbox: false,
@@ -210,37 +184,36 @@
             const itemId = data?.item?.id || data?.itemId;
             const institutionId = data?.institution?.id;
             const institutionName = data?.institution?.name;
-            const userName = refs.name.value.trim();
-            const userEmail = refs.email.value.trim();
 
             if (itemId) {
-              decorateItemId(itemId);
+              refs.itemId.textContent = itemId;
+              refs.itemId.classList.add('highlight');
+              refs.itemUpdated.textContent = `Última atualização ${formatTime(new Date())}`;
               setStatus('Item conectado', 'success');
             }
 
             await saveItem({
               clientUserId,
               itemId,
-              userName,
-              userEmail,
+              userName: refs.name.value.trim(),
+              userEmail: refs.email.value.trim(),
               institutionId,
               institutionName
             });
+
             pushLog('Dados enviados ao backend.', 'success');
-          } catch (err) {
-            console.error(err);
-            pushLog(`Erro ao salvar item: ${err.message || err}`, 'error');
+          } catch (error) {
+            console.error(error);
+            pushLog(`Erro ao salvar item: ${error.message || error}`, 'error');
           }
         }
       };
 
-      return instantiatePluggy(PluggyConnect, options)
-        .then((instance) =>
-          openPluggyInstance(instance, PluggyConnect).then((activeInstance) => {
-            uiState.pluggyInstance = activeInstance;
-            return activeInstance;
-          })
-        )
+      return openPluggyInstance(PluggyConnect, options)
+        .then((instance) => {
+          uiState.pluggyInstance = instance;
+          return instance;
+        })
         .catch((error) => {
           pushLog(`Falha ao inicializar widget: ${error?.message || error}`, 'error');
           setStatus('Erro: verifique os logs', 'error');
@@ -257,14 +230,16 @@
     try {
       const clientUserId = deriveUserId();
       uiState.currentClientUserId = clientUserId;
-      pushLog('Gerando connect token...');
+      pushLog('Solicitando token ao backend...');
       const connectToken = await getConnectToken(clientUserId);
       uiState.connectToken = connectToken;
       pushLog('Connect token pronto.', 'success');
+
       const metadata = {
         name: refs.name.value.trim() || undefined,
         email: refs.email.value.trim() || undefined
       };
+
       await openPluggyWidget(connectToken, metadata);
     } catch (error) {
       console.error(error);
