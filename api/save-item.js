@@ -56,10 +56,21 @@ module.exports = async function handler(req, res) {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const body =
+    const parsedBody =
       typeof req.body === 'string'
         ? JSON.parse(req.body || '{}')
         : req.body || {};
+
+    const body = {
+      clientUserId: parsedBody.clientUserId ?? null,
+      itemId: parsedBody.itemId ?? null,
+      userName: parsedBody.userName ?? null,
+      userEmail: parsedBody.userEmail ?? null,
+      institutionId: parsedBody.institutionId ?? null,
+      institutionName: parsedBody.institutionName ?? null,
+    };
+
+    console.log('📥 SAVE-ITEM PAYLOAD NORMALIZADO:', body);
 
     const {
       clientUserId,
@@ -71,19 +82,19 @@ module.exports = async function handler(req, res) {
     } = body;
 
     if (!clientUserId) {
-      console.error('❌ clientUserId ausente. payload:', req.body);
+      console.error('❌ clientUserId ausente. payload:', body);
     }
     if (!itemId) {
-      console.error('❌ itemId ausente. payload:', req.body);
+      console.error('❌ itemId ausente. payload:', body);
     }
     if (!institutionId) {
-      console.error('❌ institutionId ausente. payload:', req.body);
+      console.error('❌ institutionId ausente. payload:', body);
     }
     if (!institutionName) {
-      console.error('❌ institutionName ausente. payload:', req.body);
+      console.error('❌ institutionName ausente. payload:', body);
     }
 
-    if (!clientUserId || !itemId || !institutionId || !institutionName) {
+    if (!clientUserId || !itemId || !institutionId) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 

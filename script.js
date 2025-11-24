@@ -166,6 +166,7 @@
           setStatus('Erro no widget', 'error');
         },
         onSuccess: async (data) => {
+          console.log('🔍 PLUGGY SUCCESS DATA:', JSON.stringify(data, null, 2));
           pushLog('Conta conectada e itemId retornado.', 'success');
           try {
             const clientUserId = uiState.currentClientUserId || deriveUserId();
@@ -173,14 +174,21 @@
               data?.item?.id ||
               data?.itemId ||
               data?.item?.itemId ||
+              data?.id ||
               null;
             const institutionId =
               data?.institution?.id ||
               data?.item?.institution?.id ||
+              data?.item?.institutionId ||
               null;
             const institutionName =
               data?.institution?.name ||
+              data?.institution?.providerName ||
+              data?.institution?.fullName ||
               data?.item?.institution?.name ||
+              data?.item?.institution?.fullName ||
+              data?.item?.institution?.providerName ||
+              data?.item?.institutionName ||
               null;
 
             if (itemId) {
