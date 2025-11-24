@@ -180,6 +180,8 @@
               data?.institution?.id ||
               data?.item?.institution?.id ||
               data?.item?.institutionId ||
+              data?.connector?.id ||
+              data?.item?.connector?.id ||
               null;
             const institutionName =
               data?.institution?.name ||
@@ -189,6 +191,8 @@
               data?.item?.institution?.fullName ||
               data?.item?.institution?.providerName ||
               data?.item?.institutionName ||
+              data?.connector?.name ||
+              data?.item?.connector?.name ||
               null;
 
             if (itemId) {

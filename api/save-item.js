@@ -135,6 +135,7 @@ module.exports = async function handler(req, res) {
       institutionId =
         itemData?.institution?.id ||
         itemData?.institutionId ||
+        itemData?.connector?.id ||
         institutionId ||
         null;
 
@@ -142,16 +143,16 @@ module.exports = async function handler(req, res) {
         itemData?.institution?.name ||
         itemData?.institution?.providerName ||
         itemData?.institution?.fullName ||
+        itemData?.connector?.name ||
         institutionName ||
         null;
-
-      console.log('🏦 institutionId final:', institutionId);
-      console.log('🏦 institutionName final:', institutionName);
     }
+
+    console.log('🏦 institutionId final:', institutionId);
+    console.log('🏦 institutionName final:', institutionName);
 
     if (!institutionId || !institutionName) {
       console.error('❌ Não foi possível resolver instituição para o item:', itemId);
-      return res.status(502).json({ error: 'Unable to resolve institution data' });
     }
 
     await ensureTable();
