@@ -43,35 +43,50 @@ async function ensureTable() {
 }
 
 module.exports = async function handler(req, res) {
-  setCors(res);
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  const body =
-    typeof req.body === 'string'
-      ? JSON.parse(req.body || '{}')
-      : req.body || {};
-
-  const {
-    clientUserId,
-    itemId,
-    userName,
-    userEmail,
-    institutionId,
-    institutionName,
-  } = body;
-
-  if (!clientUserId || !itemId || !institutionId || !institutionName) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
+  console.log('📥 PAYLOAD RECEBIDO EM /api/save-item:', req.body);
   try {
+    setCors(res);
+
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    if (req.method !== 'POST') {
+      console.error('❌ Método inválido em /api/save-item:', req.method);
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
+    const body =
+      typeof req.body === 'string'
+        ? JSON.parse(req.body || '{}')
+        : req.body || {};
+
+    const {
+      clientUserId,
+      itemId,
+      userName,
+      userEmail,
+      institutionId,
+      institutionName,
+    } = body;
+
+    if (!clientUserId) {
+      console.error('❌ clientUserId ausente. payload:', req.body);
+    }
+    if (!itemId) {
+      console.error('❌ itemId ausente. payload:', req.body);
+    }
+    if (!institutionId) {
+      console.error('❌ institutionId ausente. payload:', req.body);
+    }
+    if (!institutionName) {
+      console.error('❌ institutionName ausente. payload:', req.body);
+    }
+
+    if (!clientUserId || !itemId || !institutionId || !institutionName) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     await ensureTable();
     const insertQuery = `
       INSERT INTO items
@@ -87,8 +102,8 @@ module.exports = async function handler(req, res) {
       institutionName,
     ]);
     return res.status(200).json({ status: 'saved' });
-  } catch (error) {
-    console.error('save-item error:', error);
-    return res.status(500).json({ error: 'Failed to save item' });
+  } catch (err) {
+    console.error('🔥 ERRO INTERNO /api/save-item:', err);
+    return res.status(500).json({ error: err.message || 'Erro interno' });
   }
 };
