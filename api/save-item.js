@@ -42,8 +42,52 @@ async function ensureTable() {
   }
 }
 
+async function fetchPluggyApiKey() {
+  const response = await fetch('https://api.pluggy.ai/auth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      clientId: process.env.PLUGGY_CLIENT_ID,
+      clientSecret: process.env.PLUGGY_CLIENT_SECRET,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Falha ao autenticar com Pluggy: ${errorText}`);
+  }
+
+  const data = await response.json();
+  if (!data?.apiKey) {
+    throw new Error('Resposta Pluggy sem apiKey');
+  }
+  console.log('🔑 API KEY OBTIDA');
+  return data.apiKey;
+}
+
+async function fetchPluggyItem(apiKey, itemId) {
+  const response = await fetch(`https://api.pluggy.ai/items/${itemId}`, {
+    headers: {
+      accept: 'application/json',
+      'X-API-KEY': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Falha ao buscar item na Pluggy: ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log('🔍 ITEM DATA COMPLETO DA PLUGGY:', JSON.stringify(data, null, 2));
+  return data;
+}
+
 module.exports = async function handler(req, res) {
-  console.log('📥 PAYLOAD RECEBIDO EM /api/save-item:', req.body);
+  console.log('📥 PAYLOAD RECEBIDO:', req.body);
   try {
     setCors(res);
 
@@ -61,41 +105,53 @@ module.exports = async function handler(req, res) {
         ? JSON.parse(req.body || '{}')
         : req.body || {};
 
-    const body = {
-      clientUserId: parsedBody.clientUserId ?? null,
-      itemId: parsedBody.itemId ?? null,
-      userName: parsedBody.userName ?? null,
-      userEmail: parsedBody.userEmail ?? null,
-      institutionId: parsedBody.institutionId ?? null,
-      institutionName: parsedBody.institutionName ?? null,
-    };
-
-    console.log('📥 SAVE-ITEM PAYLOAD NORMALIZADO:', body);
-
     const {
-      clientUserId,
-      itemId,
-      userName,
-      userEmail,
-      institutionId,
-      institutionName,
-    } = body;
+      clientUserId = null,
+      itemId = null,
+      userName = null,
+      userEmail = null,
+      institutionId: incomingInstitutionId = null,
+      institutionName: incomingInstitutionName = null,
+    } = parsedBody;
 
     if (!clientUserId) {
-      console.error('❌ clientUserId ausente. payload:', body);
+      console.error('❌ clientUserId ausente. payload:', parsedBody);
     }
     if (!itemId) {
-      console.error('❌ itemId ausente. payload:', body);
-    }
-    if (!institutionId) {
-      console.error('❌ institutionId ausente. payload:', body);
-    }
-    if (!institutionName) {
-      console.error('❌ institutionName ausente. payload:', body);
+      console.error('❌ itemId ausente. payload:', parsedBody);
     }
 
-    if (!clientUserId || !itemId || !institutionId) {
+    if (!clientUserId || !itemId) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    let institutionId = incomingInstitutionId;
+    let institutionName = incomingInstitutionName;
+
+    if (!institutionId || !institutionName) {
+      const apiKey = await fetchPluggyApiKey();
+      const itemData = await fetchPluggyItem(apiKey, itemId);
+
+      institutionId =
+        itemData?.institution?.id ||
+        itemData?.institutionId ||
+        institutionId ||
+        null;
+
+      institutionName =
+        itemData?.institution?.name ||
+        itemData?.institution?.providerName ||
+        itemData?.institution?.fullName ||
+        institutionName ||
+        null;
+
+      console.log('🏦 institutionId final:', institutionId);
+      console.log('🏦 institutionName final:', institutionName);
+    }
+
+    if (!institutionId || !institutionName) {
+      console.error('❌ Não foi possível resolver instituição para o item:', itemId);
+      return res.status(502).json({ error: 'Unable to resolve institution data' });
     }
 
     await ensureTable();
