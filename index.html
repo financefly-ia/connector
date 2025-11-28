@@ -10,36 +10,93 @@
   </head>
   <body>
     <div class="background-noise" aria-hidden="true"></div>
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+
     <main class="app-shell">
-      <header class="hero">
+      <!-- HERO -->
+      <header class="hero premium-hero">
         <div class="hero-copy">
           <p class="eyebrow">Financefly</p>
-          <h1>Conecte sua conta em segundos.</h1>
+          <h1>Conecte sua vida financeira com elegância.</h1>
           <p class="lede">
-            Conexão segura, rápida e transparente — para você ver sua vida financeira como nunca viu antes.
+            Financefly organiza, traduz e transforma sua vida financeira em clareza real.
           </p>
-          <div class="hero-meta">
-            <span class="status-pill">Open Finance Brasil</span>
-            <span class="status-pill neutral">Segurança e criptografia de ponta</span>
+          <div class="hero-actions">
+            <button id="cta-connect" class="primary-button">Conectar Conta</button>
+            <button id="cta-how" class="ghost-button">Como Funciona</button>
           </div>
         </div>
-        <div class="hero-graphic">
-          <div class="orb orb-lg"></div>
-          <div class="orb orb-sm"></div>
-          <div class="radar">
-            <span></span><span></span><span></span>
-          </div>
+        <div class="hero-visual">
+          <div class="mock-badge">Open Finance · Brasil</div>
+          <div class="glass-pill">Segurança e criptografia de ponta</div>
+          <div class="pulse-orb"></div>
         </div>
       </header>
 
-      <section class="panel connect-panel">
-        <div class="panel-head">
-          <div>
-            <p class="panel-title">Sincronize suas finanças com um clique</p>
-            <p class="panel-subtitle">
-              Você conecta, a Financefly organiza. Simples assim.
-            </p>
+      <!-- BENEFITS -->
+      <section id="how-it-works" class="panel benefits">
+        <div class="section-header">
+          <p class="eyebrow">Por que Financefly</p>
+          <h2>Veja o valor antes de conectar</h2>
+          <p class="section-subtitle">
+            Um fluxo premium que cuida da conexão, organização e insights — enquanto você foca no que importa.
+          </p>
+        </div>
+        <div class="benefit-grid">
+          <div class="benefit-card">
+            <span class="benefit-icon">🔗</span>
+            <h3>Conecte suas contas</h3>
+            <p>Integração segura via Open Finance com um clique.</p>
           </div>
+          <div class="benefit-card">
+            <span class="benefit-icon">🪄</span>
+            <h3>Consolidação automática</h3>
+            <p>Financefly reúne e traduz seus dados em poucos segundos.</p>
+          </div>
+          <div class="benefit-card">
+            <span class="benefit-icon">✨</span>
+            <h3>Classificação inteligente</h3>
+            <p>Gastos categorizados com precisão e contexto.</p>
+          </div>
+          <div class="benefit-card">
+            <span class="benefit-icon">🚀</span>
+            <h3>Insights & previsões</h3>
+            <p>Antecipe tendências e enxergue oportunidades reais.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOCKUP -->
+      <section class="panel mockup">
+        <div class="mockup-copy">
+          <p class="eyebrow">Experiência Financefly</p>
+          <h2>Sua vida financeira organizada em um só lugar.</h2>
+          <p class="section-subtitle">
+            Uma prévia do que você verá: movimentações claras, categorias inteligentes e um resumo que faz sentido.
+          </p>
+        </div>
+        <div class="mockup-card">
+          <div class="mockup-scroll">
+            <div class="mock-line wide"></div>
+            <div class="mock-line"></div>
+            <div class="mock-line mid"></div>
+            <div class="mock-line"></div>
+            <div class="mock-line wide"></div>
+            <div class="mock-line mid"></div>
+            <div class="mock-line"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONNECT (Functional) -->
+      <section class="panel connect-panel functional">
+        <div class="section-header">
+          <p class="eyebrow">Conexão Segura</p>
+          <h2>Sincronize suas finanças com um clique</h2>
+          <p class="section-subtitle">
+            Você conecta, a Financefly organiza. Tudo criptografado e seguindo o Open Finance Brasil.
+          </p>
         </div>
 
         <form id="connect-form" class="form-grid">
@@ -66,49 +123,34 @@
           <button id="connect-btn" type="submit" class="primary-button">
             Conectar minha conta
           </button>
+          <p class="privacy-text">
+            Conexão criptografada. Suas credenciais nunca são armazenadas.
+          </p>
         </form>
-      </section>
-
-      <section class="panel status-panel hidden-block">
-        <div class="metric">
-          <p class="metric-label">Item ID ativo</p>
-          <p id="item-id" class="metric-value">Nenhuma conexão ainda</p>
-          <p id="item-updated" class="metric-footnote">
-            Aguardando a finalização.
-          </p>
-        </div>
-        <div class="metric">
-          <p class="metric-label">Status interno</p>
-          <span id="status-chip" class="chip" data-state="idle">Aguardando ação</span>
-          <p class="metric-footnote">
-            Status interno da conexão.
-          </p>
-        </div>
-      </section>
-
-      <section class="panel logs-panel hidden-block">
-        <div id="log-container" class="log-container" hidden>
-          <ul id="log-stream" aria-live="polite"></ul>
-        </div>
-        <p class="log-hint">Logs internos.</p>
-      </section>
-
-      <section class="panel privacy-panel">
-        <p class="log-hint">
-          Sua conexão é criptografada e segue os padrões oficiais do Open Finance Brasil. Suas credenciais nunca são armazenadas.
-        </p>
       </section>
     </main>
 
+    <!-- SUCCESS STATE -->
     <div id="success-modal" class="success-modal" aria-hidden="true">
       <div class="success-card">
         <p class="eyebrow">Financefly</p>
-        <h2>Sua conta está conectada!</h2>
+        <h2>Sua conta está vinculada com sucesso 🎉</h2>
         <p class="lede">
-          Estamos preparando seu painel inteligente. Em breve você terá acesso ao resumo completo da sua vida financeira.
+          Seu dashboard está quase pronto. Aproveite enquanto cuidamos do resto.
         </p>
         <button id="success-dismiss" class="primary-button ghosty">Voltar ao início</button>
       </div>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-brand">Financefly</div>
+      <div class="footer-links">
+        <a href="#">Termos</a>
+        <a href="#">Privacidade</a>
+        <a href="#">Suporte</a>
+      </div>
+      <p class="footer-note">Financefly © 2025 — Criando o futuro das finanças pessoais.</p>
+    </footer>
   </body>
-  </html>
+</html>

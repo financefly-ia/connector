@@ -13,7 +13,10 @@
     logContainer: document.getElementById('log-container'),
     logStream: document.getElementById('log-stream'),
     successModal: document.getElementById('success-modal'),
-    successDismiss: document.getElementById('success-dismiss')
+    successDismiss: document.getElementById('success-dismiss'),
+    ctaConnect: document.getElementById('cta-connect'),
+    ctaHow: document.getElementById('cta-how'),
+    howSection: document.getElementById('how-it-works')
   };
 
   const uiState = {
@@ -288,6 +291,21 @@
     }
     if (refs.successDismiss) {
       refs.successDismiss.addEventListener('click', hideSuccessModal);
+    }
+    if (refs.ctaConnect) {
+      refs.ctaConnect.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (refs.form) {
+          refs.form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => refs.button?.click(), 400);
+        }
+      });
+    }
+    if (refs.ctaHow && refs.howSection) {
+      refs.ctaHow.addEventListener('click', (e) => {
+        e.preventDefault();
+        refs.howSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     }
   }
 
