@@ -687,3 +687,46 @@ body {
     transform: translateY(-12px);
   }
 }
+
+/* Carrossel de logos — não alterar IDs do JS */
+.brand-carousel {
+  width: 100%;
+  overflow: hidden;
+  padding: 32px 0;
+  margin-top: 40px;
+}
+
+.brand-track {
+  display: flex;
+  gap: 48px;
+  animation: scroll 28s linear infinite;
+}
+
+.brand-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 28px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.brand-pill img {
+  max-height: 36px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.95;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.brand-pill:hover img {
+  transform: scale(1.08);
+  opacity: 1;
+}
+
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
