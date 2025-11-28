@@ -267,6 +267,16 @@
     if (refs.logToggle) {
       refs.logToggle.addEventListener('click', toggleLogs);
     }
+    const heroPrimaryCTA = document.querySelector('.hero .primary-button');
+    if (heroPrimaryCTA) {
+      heroPrimaryCTA.addEventListener('click', (e) => {
+        e.preventDefault();
+        const form = document.getElementById('connect-form');
+        if (form) {
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);

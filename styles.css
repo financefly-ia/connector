@@ -697,6 +697,26 @@ body {
   position: relative;
 }
 
+.trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+}
+
+.trust-badge {
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
 .brand-carousel::before,
 .brand-carousel::after {
   content: "";
