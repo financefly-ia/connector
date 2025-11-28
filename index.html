@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Financefly Connector — Pluggy</title>
+    <title>Financefly Connector – Pluggy</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.pluggy.ai/pluggy-connect/latest/pluggy-connect.js"></script>
     <script defer src="script.js"></script>
@@ -13,16 +13,14 @@
     <main class="app-shell">
       <header class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Financefly · Pluggy</p>
-          <h1>Conecte contas em segundos</h1>
+          <p class="eyebrow">Financefly</p>
+          <h1>Conecte sua conta em segundos.</h1>
           <p class="lede">
-            Gere tokens Pluggy diretamente do browser, abra o widget oficial e
-            receba o <strong>itemId</strong> com visual futurista pronto para
-            Vercel.
+            Conexão segura, rápida e transparente — para você ver sua vida financeira como nunca viu antes.
           </p>
           <div class="hero-meta">
-            <span class="status-pill">Widget Pluggy v2.9.2</span>
-            <span class="status-pill neutral">Modo estático / Vercel</span>
+            <span class="status-pill">Open Finance Brasil</span>
+            <span class="status-pill neutral">Segurança e criptografia de ponta</span>
           </div>
         </div>
         <div class="hero-graphic">
@@ -37,14 +35,11 @@
       <section class="panel connect-panel">
         <div class="panel-head">
           <div>
-            <p class="panel-title">Iniciar conexão financeira</p>
+            <p class="panel-title">Sincronize suas finanças com um clique</p>
             <p class="panel-subtitle">
-              Autentica, gera token e chama o widget oficial sem backend.
+              Você conecta, a Financefly organiza. Simples assim.
             </p>
           </div>
-          <button id="log-toggle" type="button" class="ghost-button">
-            Mostrar logs
-          </button>
         </div>
 
         <form id="connect-form" class="form-grid">
@@ -59,49 +54,61 @@
             />
           </label>
           <label class="field">
-            <span>E-mail para identificar o token (opcional)</span>
+            <span>E-mail (opcional)</span>
             <input
               id="user-email"
               type="email"
               name="email"
-              placeholder="Ex.: ana@financefly.io"
+              placeholder="Ex.: ana@email.com"
               autocomplete="email"
             />
           </label>
           <button id="connect-btn" type="submit" class="primary-button">
-            Iniciar conexão financeira
+            Conectar minha conta
           </button>
         </form>
       </section>
 
-      <section class="panel status-panel">
+      <section class="panel status-panel hidden-block">
         <div class="metric">
           <p class="metric-label">Item ID ativo</p>
           <p id="item-id" class="metric-value">Nenhuma conexão ainda</p>
           <p id="item-updated" class="metric-footnote">
-            Aguarde a finalização do widget.
+            Aguardando a finalização.
           </p>
         </div>
         <div class="metric">
-          <p class="metric-label">Status do fluxo</p>
-          <span id="status-chip" class="chip" data-state="idle"
-            >Aguardando ação</span
-          >
+          <p class="metric-label">Status interno</p>
+          <span id="status-chip" class="chip" data-state="idle">Aguardando ação</span>
           <p class="metric-footnote">
-            O widget abre após o token ser gerado com sucesso.
+            Status interno da conexão.
           </p>
         </div>
       </section>
 
-      <section class="panel logs-panel">
+      <section class="panel logs-panel hidden-block">
         <div id="log-container" class="log-container" hidden>
           <ul id="log-stream" aria-live="polite"></ul>
         </div>
+        <p class="log-hint">Logs internos.</p>
+      </section>
+
+      <section class="panel privacy-panel">
         <p class="log-hint">
-          Os registros mostram cada etapa: autenticação, token, widget e
-          callbacks.
+          Sua conexão é criptografada e segue os padrões oficiais do Open Finance Brasil. Suas credenciais nunca são armazenadas.
         </p>
       </section>
     </main>
+
+    <div id="success-modal" class="success-modal" aria-hidden="true">
+      <div class="success-card">
+        <p class="eyebrow">Financefly</p>
+        <h2>Sua conta está conectada!</h2>
+        <p class="lede">
+          Estamos preparando seu painel inteligente. Em breve você terá acesso ao resumo completo da sua vida financeira.
+        </p>
+        <button id="success-dismiss" class="primary-button ghosty">Voltar ao início</button>
+      </div>
+    </div>
   </body>
-</html>
+  </html>

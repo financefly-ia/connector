@@ -11,7 +11,9 @@
     itemUpdated: document.getElementById('item-updated'),
     logToggle: document.getElementById('log-toggle'),
     logContainer: document.getElementById('log-container'),
-    logStream: document.getElementById('log-stream')
+    logStream: document.getElementById('log-stream'),
+    successModal: document.getElementById('success-modal'),
+    successDismiss: document.getElementById('success-dismiss')
   };
 
   const uiState = {
@@ -68,9 +70,11 @@
   function toggleLogs() {
     uiState.logsVisible = !uiState.logsVisible;
     refs.logContainer.hidden = !uiState.logsVisible;
-    refs.logToggle.textContent = uiState.logsVisible
-      ? 'Ocultar logs'
-      : 'Mostrar logs';
+    if (refs.logToggle) {
+      refs.logToggle.textContent = uiState.logsVisible
+        ? 'Ocultar logs'
+        : 'Mostrar logs';
+    }
     if (uiState.logsVisible && uiState.logCount === 0) {
       pushLog('Logs prontos. Clique no botão para iniciar o fluxo.');
     }
@@ -145,6 +149,20 @@
     return uiState.pluggyReadyPromise;
   }
 
+  function showSuccessModal() {
+    if (refs.successModal) {
+      refs.successModal.classList.add('visible');
+      refs.successModal.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function hideSuccessModal() {
+    if (refs.successModal) {
+      refs.successModal.classList.remove('visible');
+      refs.successModal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   async function openPluggyWidget(token, metadata) {
     try {
       const PluggyConnect = await ensurePluggyReady();
@@ -214,6 +232,7 @@
             });
 
             pushLog('Dados enviados ao backend.', 'success');
+            showSuccessModal();
           } catch (error) {
             console.error(error);
             pushLog(`Erro ao salvar item: ${error.message || error}`, 'error');
@@ -266,6 +285,9 @@
     }
     if (refs.logToggle) {
       refs.logToggle.addEventListener('click', toggleLogs);
+    }
+    if (refs.successDismiss) {
+      refs.successDismiss.addEventListener('click', hideSuccessModal);
     }
   }
 

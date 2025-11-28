@@ -393,6 +393,55 @@ body {
   margin: 18px 0 0;
 }
 
+.hidden-block {
+  display: none;
+}
+
+.success-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.success-modal.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.success-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  padding: 32px;
+  border-radius: 22px;
+  width: min(420px, 90vw);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.success-card h2 {
+  margin: 10px 0 12px;
+  font-size: 1.8rem;
+}
+
+.success-card .lede {
+  margin: 0 0 18px;
+}
+
+.primary-button.ghosty {
+  width: 100%;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(81, 244, 255, 0.5);
+}
+
 @media (max-width: 720px) {
   .panel,
   .hero {
